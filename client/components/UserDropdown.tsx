@@ -1,13 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  User,
-  LogOut,
-  Package,
-  Settings,
-  ChevronDown,
-  LogIn,
-} from "lucide-react";
+import { User, LogOut, Package, Settings, ChevronDown, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthService, type UserProfile } from "@/lib/authService";
 import { LoginModal } from "./LoginModal";
@@ -18,7 +11,7 @@ export function UserDropdown() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const loadCurrentUser = async () => {
+    const loadCurrentUser = async () => {
     try {
       const user = await AuthService.getCurrentUser();
       setUserProfile(user);
@@ -47,7 +40,7 @@ export function UserDropdown() {
     };
   }, []);
 
-  const handleLogout = async () => {
+    const handleLogout = async () => {
     try {
       await AuthService.signOut();
       setUserProfile(null);
@@ -64,22 +57,25 @@ export function UserDropdown() {
     setShowLoginModal(false);
   };
 
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2"
-      >
-        <User className="h-5 w-5" />
-        {userProfile && (
-          <span className="hidden sm:inline text-sm">
-            {userProfile.firstName}
-          </span>
-        )}
-        <ChevronDown className="h-3 w-3" />
-      </Button>
+    return (
+    <>
+      <div className="relative" ref={dropdownRef}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2"
+        >
+          <User className="h-5 w-5" />
+          {userProfile ? (
+            <span className="hidden sm:inline text-sm">
+              {userProfile.firstName}
+            </span>
+          ) : (
+            <span className="hidden sm:inline text-sm">Account</span>
+          )}
+          <ChevronDown className="h-3 w-3" />
+        </Button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
