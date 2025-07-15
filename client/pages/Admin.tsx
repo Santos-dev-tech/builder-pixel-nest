@@ -506,10 +506,41 @@ export default function Admin() {
         {/* Orders List */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Recent Orders</CardTitle>
-              <Button onClick={loadOrders} variant="outline" size="sm">
-                Refresh
+            <div className="flex items-center justify-between mb-4">
+              <CardTitle>Orders Management</CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleExportOrders}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                </Button>
+                <Button onClick={loadOrders} variant="outline" size="sm">
+                  Refresh
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search orders by number, customer name, email, or phone..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              <Button
+                onClick={() => setShowAdminSetup(true)}
+                variant="outline"
+                size="sm"
+                className="text-orange-600 border-orange-600"
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Admin Setup
               </Button>
             </div>
           </CardHeader>
