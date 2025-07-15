@@ -165,6 +165,46 @@ export default function Admin() {
     }
   };
 
+  // Show admin setup if user is not admin
+  if (!isAdmin && !loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Shield className="h-24 w-24 mx-auto text-orange-500 mb-8" />
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Admin Access Required
+          </h1>
+          <p className="text-lg text-gray-600 mb-8">
+            You need admin privileges to access this page. Create an admin
+            account or sign in with existing admin credentials.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={() => setShowAdminSetup(true)}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Create Admin Account
+            </Button>
+            <Link to="/">
+              <Button variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Store
+              </Button>
+            </Link>
+          </div>
+          <AdminSetup
+            isOpen={showAdminSetup}
+            onClose={() => setShowAdminSetup(false)}
+            onSuccess={() => {
+              initializeAdmin();
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (selectedOrder) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
