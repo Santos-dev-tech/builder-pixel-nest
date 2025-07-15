@@ -15,23 +15,12 @@ import { LoginModal } from "./LoginModal";
 export function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load user profile from localStorage
-    const savedProfile = localStorage.getItem("user_profile");
-    if (savedProfile) {
-      setUserProfile(JSON.parse(savedProfile));
-    } else {
-      // Set default user for demo
-      const defaultUser = {
-        firstName: "Guest",
-        lastName: "User",
-        email: "guest@example.com",
-      };
-      setUserProfile(defaultUser);
-      localStorage.setItem("user_profile", JSON.stringify(defaultUser));
-    }
+    // Load current user
+    loadCurrentUser();
 
     // Close dropdown when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
