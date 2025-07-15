@@ -24,6 +24,7 @@ import {
   Twitter,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { FirebaseStatus } from "@/components/FirebaseStatus";
 
 export default function Index() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
