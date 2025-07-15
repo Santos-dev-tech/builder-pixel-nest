@@ -18,8 +18,17 @@ export function UserDropdown() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const loadCurrentUser = async () => {
+    try {
+      const user = await AuthService.getCurrentUser();
+      setUserProfile(user);
+    } catch (error) {
+      console.error("Error loading user:", error);
+      setUserProfile(null);
+    }
+  };
+
   useEffect(() => {
-    // Load current user
     loadCurrentUser();
 
     // Close dropdown when clicking outside
