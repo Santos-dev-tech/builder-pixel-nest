@@ -185,11 +185,34 @@ export default function Cart() {
 
       const result = await response.json();
       if (result.success) {
+        // Create order in Firebase/localStorage
+        try {
+          const orderId = await OrderService.createOrder({
+            customerInfo: formData,
+            items: cartItems,
+            subtotal: getSubtotal(),
+            shipping: getShipping(),
+            tax: getTax(),
+            totalAmount: getTotal(),
+            status: "pending",
+            paymentMethod: "mpesa",
+            paymentStatus: "pending",
+            mpesaDetails: {
+              checkoutRequestId: result.checkoutRequestId,
+              merchantRequestId: result.merchantRequestId,
+            },
+          });
+
+          console.log("Order created with ID:", orderId);
+        } catch (orderError) {
+          console.error("Failed to create order:", orderError);
+        }
+
         // Show success message
         const successMessage =
           result.environment === "mock"
-            ? "✅ Mock M-Pesa payment successful! (This is a demo - no real money was charged)"
-            : "📱 M-Pesa payment request sent! Check your phone to complete payment.";
+            ? "✅ Mock M-Pesa payment successful! Order created. (This is a demo - no real money was charged)"
+            : "📱 M-Pesa payment request sent! Check your phone to complete payment. Your order has been created.";
 
         alert(successMessage);
 
