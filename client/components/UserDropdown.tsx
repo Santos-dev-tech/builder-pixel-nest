@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Package, Settings, ChevronDown } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Package,
+  Settings,
+  ChevronDown,
+  LogIn,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-
-interface UserProfile {
-  firstName: string;
-  lastName: string;
-  email: string;
-}
+import { AuthService, type UserProfile } from "@/lib/authService";
+import { LoginModal } from "./LoginModal";
 
 export function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
