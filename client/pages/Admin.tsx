@@ -451,7 +451,9 @@ export default function Admin() {
                   <p className="text-sm font-medium text-gray-600">
                     Total Orders
                   </p>
-                  <p className="text-2xl font-bold">{orders.length}</p>
+                  <p className="text-2xl font-bold">
+                    {stats?.totalOrders || 0}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -465,9 +467,7 @@ export default function Admin() {
                     Total Revenue
                   </p>
                   <p className="text-2xl font-bold">
-                    {formatPrice(
-                      orders.reduce((sum, order) => sum + order.totalAmount, 0),
-                    )}
+                    {formatPrice(stats?.totalRevenue || 0)}
                   </p>
                 </div>
               </div>
@@ -480,10 +480,7 @@ export default function Admin() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Customers</p>
                   <p className="text-2xl font-bold">
-                    {
-                      new Set(orders.map((order) => order.customerInfo.email))
-                        .size
-                    }
+                    {stats?.totalCustomers || 0}
                   </p>
                 </div>
               </div>
@@ -498,16 +495,7 @@ export default function Admin() {
                     This Month
                   </p>
                   <p className="text-2xl font-bold">
-                    {
-                      orders.filter((order) => {
-                        const orderDate = new Date(order.createdAt);
-                        const now = new Date();
-                        return (
-                          orderDate.getMonth() === now.getMonth() &&
-                          orderDate.getFullYear() === now.getFullYear()
-                        );
-                      }).length
-                    }
+                    {stats?.thisMonthOrders || 0}
                   </p>
                 </div>
               </div>
