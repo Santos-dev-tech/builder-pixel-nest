@@ -128,11 +128,9 @@ export default function Index() {
               <Link to="/cart">
                 <Button variant="ghost" size="sm" className="relative">
                   <ShoppingCart className="h-5 w-5" />
-                  {cartItemsCount > 0 && (
-                    <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                      {cartItemsCount}
-                    </Badge>
-                  )}
+                  <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartItemsCount}
+                  </Badge>
                 </Button>
               </Link>
               <Button variant="ghost" size="sm" className="md:hidden">
