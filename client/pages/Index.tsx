@@ -142,6 +142,13 @@ export default function Index() {
         </div>
       </nav>
 
+      {/* Firebase Status */}
+      <div className="bg-gray-50 border-b border-gray-200 py-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
+          <FirebaseStatus />
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section id="home" className="relative h-screen flex items-center">
         <div className="absolute inset-0">
