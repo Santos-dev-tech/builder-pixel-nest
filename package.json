@@ -20,7 +20,8 @@
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
     "deploy:firebase": "npm run build:client && firebase deploy --only hosting",
-    "firebase:init": "firebase init hosting"
+    "firebase:init": "firebase init hosting",
+    "firebase:test": "node scripts/test-firebase.js"
   },
   "dependencies": {
     "express": "^4.18.2",
