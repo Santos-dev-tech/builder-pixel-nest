@@ -142,20 +142,43 @@ export default function Cart() {
       },
     };
 
-    const response = await fetch("/api/mpesa/stkpush", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(paymentData),
-    });
+    try {
+      const response = await fetch("/api/mpesa/stkpush", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(paymentData),
+      });
 
-    const result = await response.json();
-    if (result.success) {
-      alert(
-        "M-Pesa payment request sent! Check your phone to complete payment.",
-      );
-      // Redirect to order confirmation or status page
-    } else {
-      throw new Error(result.message || "M-Pesa payment failed");
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // Try to get error message from response
+        let errorMessage = "M-Pesa payment failed";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        alert(
+          "M-Pesa payment request sent! Check your phone to complete payment.",
+        );
+        // Clear cart after successful payment request
+        CartService.clearCart();
+        loadCart();
+        // Reset to cart step
+        setCheckoutStep("cart");
+      } else {
+        throw new Error(result.message || "M-Pesa payment failed");
+      }
+    } catch (fetchError) {
+      console.error("M-Pesa fetch error:", fetchError);
+      throw fetchError;
     }
   };
 
