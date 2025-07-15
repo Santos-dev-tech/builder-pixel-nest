@@ -559,6 +559,13 @@ export default function Cart() {
                     </div>
                   </div>
 
+                  <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                    <p className="text-sm text-blue-700">
+                      🎭 <strong>Demo Mode:</strong> This is using a mock M-Pesa
+                      service for testing. No real money will be charged.
+                    </p>
+                  </div>
+
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h4 className="font-semibold mb-2">Order Summary</h4>
                     <div className="space-y-1 text-sm">
