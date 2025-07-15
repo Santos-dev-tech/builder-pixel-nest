@@ -124,7 +124,11 @@ export default function Cart() {
       }
     } catch (error) {
       console.error("Payment failed:", error);
-      alert("Payment failed. Please try again.");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Payment failed. Please try again.";
+      alert(errorMessage);
     } finally {
       setIsCheckingOut(false);
     }
