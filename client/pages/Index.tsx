@@ -124,9 +124,7 @@ export default function Index() {
               <Button variant="ghost" size="sm">
                 <Heart className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="sm">
-                <User className="h-5 w-5" />
-              </Button>
+              <UserDropdown />
               <Link to="/cart">
                 <Button variant="ghost" size="sm" className="relative">
                   <ShoppingCart className="h-5 w-5" />
