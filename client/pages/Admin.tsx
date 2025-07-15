@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { OrderService, type Order } from "@/lib/productService";
+import { AdminService, type AdminStats } from "@/lib/adminService";
+import { AuthService } from "@/lib/authService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +14,14 @@ import {
   Phone,
   MapPin,
   Eye,
+  Shield,
+  Download,
+  Search,
+  Filter,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FirebaseStatus } from "@/components/FirebaseStatus";
+import { AdminSetup } from "@/components/AdminSetup";
 
 export default function Admin() {
   const [orders, setOrders] = useState<Order[]>([]);
