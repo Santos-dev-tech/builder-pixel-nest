@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CartService, type CartItem } from "@/lib/productService";
+import { CartService, OrderService, type CartItem } from "@/lib/productService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
