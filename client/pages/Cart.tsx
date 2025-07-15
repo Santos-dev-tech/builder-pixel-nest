@@ -441,10 +441,13 @@ export default function Cart() {
                       onChange={(e) =>
                         handleInputChange("phone", e.target.value)
                       }
-                      placeholder="254XXXXXXXXX"
+                      placeholder="0712345678 or 254712345678"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                       required
                     />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Enter your Safaricom number (e.g., 0712345678)
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
