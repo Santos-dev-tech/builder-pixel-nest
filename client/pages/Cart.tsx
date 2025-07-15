@@ -185,9 +185,14 @@ export default function Cart() {
 
       const result = await response.json();
       if (result.success) {
-        alert(
-          "M-Pesa payment request sent! Check your phone to complete payment.",
-        );
+        // Show success message
+        const successMessage =
+          result.environment === "mock"
+            ? "✅ Mock M-Pesa payment successful! (This is a demo - no real money was charged)"
+            : "📱 M-Pesa payment request sent! Check your phone to complete payment.";
+
+        alert(successMessage);
+
         // Clear cart after successful payment request
         CartService.clearCart();
         loadCart();
