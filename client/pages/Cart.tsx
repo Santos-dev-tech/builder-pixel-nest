@@ -135,9 +135,25 @@ export default function Cart() {
   };
 
   const processMpesaPayment = async () => {
+    // Validate phone number format for M-Pesa
+    let phone = formData.phone.replace(/\s+/g, ""); // Remove spaces
+    if (phone.startsWith("0")) {
+      phone = "254" + phone.substring(1); // Convert 07XX to 254XX
+    } else if (!phone.startsWith("254")) {
+      throw new Error(
+        "Phone number must be in format 254XXXXXXXXX or 07XXXXXXXX",
+      );
+    }
+
+    if (!/^254\d{9}$/.test(phone)) {
+      throw new Error(
+        "Please enter a valid Kenyan phone number (254XXXXXXXXX)",
+      );
+    }
+
     const paymentData = {
       amount: Math.round(getTotal()),
-      phone: formData.phone,
+      phone: phone,
       description: `StyleCo Order - ${cartItems.length} items`,
       orderData: {
         items: cartItems,
