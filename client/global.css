@@ -126,7 +126,7 @@
 @layer components {
   /* Product card hover effects */
   .product-card {
-    @apply bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-brand-lg transition-all duration-300 group;
+    @apply bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-brand-lg transition-all duration-300;
   }
 
   .product-image {
