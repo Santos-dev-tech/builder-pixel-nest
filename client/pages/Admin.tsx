@@ -25,8 +25,13 @@ import { AdminSetup } from "@/components/AdminSetup";
 
 export default function Admin() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminSetup, setShowAdminSetup] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     loadOrders();
