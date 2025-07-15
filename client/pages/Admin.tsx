@@ -552,7 +552,7 @@ export default function Admin() {
                 </div>
                 <p className="text-gray-600">Loading orders...</p>
               </div>
-            ) : orders.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <div className="text-center py-8">
                 <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-600 mb-2">No orders found</p>
