@@ -18,11 +18,13 @@
     "start": "node dist/server/node-build.mjs",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "deploy:firebase": "npm run build:client && firebase deploy --only hosting",
+    "firebase:init": "firebase init hosting"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "firebase": "^11.10.0",
+    "firebase": "^11.2.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
