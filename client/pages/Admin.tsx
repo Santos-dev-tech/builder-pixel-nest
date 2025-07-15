@@ -34,8 +34,62 @@ export default function Admin() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    loadOrders();
+    initializeAdmin();
   }, []);
+
+  useEffect(() => {
+    filterOrders();
+  }, [orders, searchTerm]);
+
+  const initializeAdmin = async () => {
+    setLoading(true);
+    try {
+      // Check if user is admin
+      const adminStatus = await AdminService.isCurrentUserAdmin();
+      setIsAdmin(adminStatus);
+
+      if (adminStatus) {
+        await loadOrders();
+        await loadStats();
+      }
+    } catch (error) {
+      console.error("Error initializing admin:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const adminStats = await AdminService.getAdminStats();
+      setStats(adminStats);
+    } catch (error) {
+      console.error("Error loading stats:", error);
+    }
+  };
+
+  const filterOrders = () => {
+    if (!searchTerm) {
+      setFilteredOrders(orders);
+      return;
+    }
+
+    const filtered = orders.filter(
+      (order) =>
+        order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerInfo.email
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        order.customerInfo.firstName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        order.customerInfo.lastName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        order.customerInfo.phone.includes(searchTerm),
+    );
+    setFilteredOrders(filtered);
+  };
 
   const loadOrders = async () => {
     setLoading(true);
