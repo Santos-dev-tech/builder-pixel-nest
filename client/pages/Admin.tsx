@@ -617,6 +617,14 @@ export default function Admin() {
           </CardContent>
         </Card>
       </div>
+
+      <AdminSetup
+        isOpen={showAdminSetup}
+        onClose={() => setShowAdminSetup(false)}
+        onSuccess={() => {
+          initializeAdmin();
+        }}
+      />
     </div>
   );
 }
