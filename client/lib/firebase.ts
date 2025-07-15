@@ -1,9 +1,9 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  // Demo configuration - replace with your actual Firebase config
+  // Replace with your actual Firebase configuration
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-api-key",
   authDomain:
     import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "demo-project.firebaseapp.com",
@@ -22,9 +22,23 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// For demo purposes, we'll use local storage as fallback when Firebase isn't configured
+// Check if Firebase is properly configured
 export const isFirebaseConfigured = () => {
-  return import.meta.env.VITE_FIREBASE_API_KEY !== undefined;
+  return (
+    import.meta.env.VITE_FIREBASE_API_KEY !== undefined &&
+    import.meta.env.VITE_FIREBASE_API_KEY !== "demo-api-key" &&
+    import.meta.env.VITE_FIREBASE_PROJECT_ID !== "demo-project"
+  );
+};
+
+// Admin users list (in production, store this in Firestore with proper security)
+export const ADMIN_EMAILS = [
+  "admin@styleco.com", // Default admin email
+  // Add more admin emails here
+];
+
+export const isAdminUser = (email: string): boolean => {
+  return ADMIN_EMAILS.includes(email.toLowerCase());
 };
 
 export default app;
