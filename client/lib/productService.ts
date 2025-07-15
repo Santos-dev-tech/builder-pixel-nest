@@ -12,6 +12,7 @@ import {
   limit,
   addDoc,
   serverTimestamp,
+  writeBatch,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "./firebase";
 
@@ -28,6 +29,8 @@ export interface Product {
   inStock: boolean;
   featured: boolean;
   tags: string[];
+  inventory?: number;
+  sku?: string;
   createdAt?: any;
   updatedAt?: any;
 }
@@ -43,18 +46,30 @@ export interface CartItem {
 
 export interface Order {
   id?: string;
-  userId: string;
-  items: CartItem[];
-  totalAmount: number;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  shippingAddress: {
-    name: string;
+  orderNumber: string;
+  userId?: string;
+  customerInfo: {
+    firstName: string;
+    lastName: string;
     email: string;
     phone: string;
     address: string;
     city: string;
-    state: string;
-    zipCode: string;
+    postalCode?: string;
+  };
+  items: CartItem[];
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  totalAmount: number;
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  paymentMethod: "mpesa" | "card" | "cash";
+  paymentStatus: "pending" | "completed" | "failed" | "refunded";
+  mpesaDetails?: {
+    checkoutRequestId: string;
+    merchantRequestId: string;
+    mpesaReceiptNumber?: string;
+    transactionDate?: string;
   };
   createdAt?: any;
   updatedAt?: any;
@@ -62,6 +77,7 @@ export interface Order {
 
 const PRODUCTS_COLLECTION = "products";
 const ORDERS_COLLECTION = "orders";
+const CATEGORIES_COLLECTION = "categories";
 
 // Demo products for when Firebase isn't configured
 const DEMO_PRODUCTS: Product[] = [
@@ -69,7 +85,7 @@ const DEMO_PRODUCTS: Product[] = [
     id: "1",
     name: "Classic Cotton Tee",
     description:
-      "A comfortable and stylish cotton t-shirt perfect for everyday wear.",
+      "A comfortable and stylish cotton t-shirt perfect for everyday wear. Made from premium 100% organic cotton with a relaxed fit.",
     price: 29.99,
     images: [
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=600&fit=crop",
@@ -80,12 +96,15 @@ const DEMO_PRODUCTS: Product[] = [
     colors: ["Black", "White", "Navy", "Gray"],
     inStock: true,
     featured: true,
+    inventory: 50,
+    sku: "CT001",
     tags: ["basic", "cotton", "casual"],
   },
   {
     id: "2",
     name: "Slim Fit Jeans",
-    description: "Modern slim-fit jeans with a contemporary silhouette.",
+    description:
+      "Modern slim-fit jeans with a contemporary silhouette. Crafted from premium denim with stretch for comfort.",
     price: 79.99,
     salePrice: 59.99,
     images: [
@@ -97,12 +116,15 @@ const DEMO_PRODUCTS: Product[] = [
     colors: ["Dark Blue", "Light Blue", "Black"],
     inStock: true,
     featured: true,
+    inventory: 30,
+    sku: "SF002",
     tags: ["denim", "slim-fit", "casual"],
   },
   {
     id: "3",
     name: "Wool Blend Sweater",
-    description: "Cozy wool blend sweater perfect for cooler weather.",
+    description:
+      "Cozy wool blend sweater perfect for cooler weather. Luxurious feel with excellent warmth retention.",
     price: 89.99,
     images: [
       "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500&h=600&fit=crop",
@@ -113,12 +135,15 @@ const DEMO_PRODUCTS: Product[] = [
     colors: ["Cream", "Navy", "Gray", "Brown"],
     inStock: true,
     featured: false,
+    inventory: 25,
+    sku: "WB003",
     tags: ["wool", "warm", "winter"],
   },
   {
     id: "4",
     name: "Summer Dress",
-    description: "Light and airy summer dress perfect for warm days.",
+    description:
+      "Light and airy summer dress perfect for warm days. Flowy design with breathable fabric.",
     price: 69.99,
     images: [
       "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500&h=600&fit=crop",
@@ -129,12 +154,15 @@ const DEMO_PRODUCTS: Product[] = [
     colors: ["White", "Blue", "Pink", "Yellow"],
     inStock: true,
     featured: true,
+    inventory: 20,
+    sku: "SD004",
     tags: ["summer", "light", "casual"],
   },
   {
     id: "5",
     name: "Leather Jacket",
-    description: "Classic leather jacket for a timeless look.",
+    description:
+      "Classic leather jacket for a timeless look. Premium genuine leather with vintage styling.",
     price: 199.99,
     images: [
       "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&h=600&fit=crop",
@@ -145,12 +173,15 @@ const DEMO_PRODUCTS: Product[] = [
     colors: ["Black", "Brown"],
     inStock: true,
     featured: true,
+    inventory: 15,
+    sku: "LJ005",
     tags: ["leather", "classic", "outerwear"],
   },
   {
     id: "6",
     name: "Athletic Shorts",
-    description: "Comfortable athletic shorts for workouts and casual wear.",
+    description:
+      "Comfortable athletic shorts for workouts and casual wear. Moisture-wicking fabric with elastic waistband.",
     price: 39.99,
     images: [
       "https://images.unsplash.com/photo-1506629905607-e48883e9f8a8?w=500&h=600&fit=crop",
@@ -161,15 +192,49 @@ const DEMO_PRODUCTS: Product[] = [
     colors: ["Black", "Navy", "Gray", "Red"],
     inStock: true,
     featured: false,
+    inventory: 40,
+    sku: "AS006",
     tags: ["athletic", "comfortable", "casual"],
   },
 ];
 
 export class ProductService {
+  // Initialize demo products in Firebase (run once)
+  static async initializeDemoProducts(): Promise<boolean> {
+    if (!isFirebaseConfigured()) {
+      console.log(
+        "Firebase not configured, skipping demo product initialization",
+      );
+      return false;
+    }
+
+    try {
+      const batch = writeBatch(db);
+
+      for (const product of DEMO_PRODUCTS) {
+        const productRef = doc(collection(db, PRODUCTS_COLLECTION));
+        const productData = {
+          ...product,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        };
+        delete productData.id; // Remove the demo ID
+        batch.set(productRef, productData);
+      }
+
+      await batch.commit();
+      console.log("Demo products initialized in Firebase");
+      return true;
+    } catch (error) {
+      console.error("Error initializing demo products:", error);
+      return false;
+    }
+  }
+
   // Product management
   static async createProduct(
     productData: Omit<Product, "id" | "createdAt" | "updatedAt">,
-  ) {
+  ): Promise<string> {
     if (!isFirebaseConfigured()) {
       throw new Error("Firebase not configured");
     }
@@ -216,13 +281,22 @@ export class ProductService {
 
     try {
       const querySnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
-      return querySnapshot.docs.map((doc) => ({
+      const products = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
+
+      // If no products found, initialize demo products
+      if (products.length === 0) {
+        await this.initializeDemoProducts();
+        return DEMO_PRODUCTS;
+      }
+
+      return products;
     } catch (error) {
       console.error("Error getting products:", error);
-      throw error;
+      // Return demo products as fallback
+      return DEMO_PRODUCTS;
     }
   }
 
@@ -239,13 +313,20 @@ export class ProductService {
         orderBy("createdAt", "desc"),
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map((doc) => ({
+      const products = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
+
+      // If no featured products found, return demo featured products
+      if (products.length === 0) {
+        return DEMO_PRODUCTS.filter((p) => p.featured);
+      }
+
+      return products;
     } catch (error) {
       console.error("Error getting featured products:", error);
-      throw error;
+      return DEMO_PRODUCTS.filter((p) => p.featured);
     }
   }
 
@@ -268,7 +349,7 @@ export class ProductService {
       })) as Product[];
     } catch (error) {
       console.error("Error getting products by category:", error);
-      throw error;
+      return DEMO_PRODUCTS.filter((p) => p.category === category);
     }
   }
 
@@ -285,21 +366,19 @@ export class ProductService {
     }
 
     try {
-      // Note: Firestore doesn't support full-text search natively
-      // This is a simple name search
-      const q = query(
-        collection(db, PRODUCTS_COLLECTION),
-        where("name", ">=", searchTerm),
-        where("name", "<=", searchTerm + "\uf8ff"),
+      // Get all products and filter client-side (for better search)
+      const allProducts = await this.getAllProducts();
+      const term = searchTerm.toLowerCase();
+      return allProducts.filter(
+        (p) =>
+          p.name.toLowerCase().includes(term) ||
+          p.description.toLowerCase().includes(term) ||
+          p.tags.some((tag) => tag.toLowerCase().includes(term)) ||
+          p.category.toLowerCase().includes(term),
       );
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Product[];
     } catch (error) {
       console.error("Error searching products:", error);
-      throw error;
+      return [];
     }
   }
 
@@ -345,6 +424,124 @@ export class ProductService {
 
   static getColors(): string[] {
     return ["Black", "White", "Navy", "Gray", "Brown", "Blue", "Red", "Green"];
+  }
+}
+
+// Order Service
+export class OrderService {
+  static async createOrder(
+    orderData: Omit<Order, "id" | "orderNumber" | "createdAt" | "updatedAt">,
+  ): Promise<string> {
+    if (!isFirebaseConfigured()) {
+      console.log("Firebase not configured, order saved to local storage");
+      const orderId = Date.now().toString();
+      const order = {
+        ...orderData,
+        id: orderId,
+        orderNumber: `ORD-${orderId}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(`order_${orderId}`, JSON.stringify(order));
+      return orderId;
+    }
+
+    try {
+      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+      const docRef = await addDoc(collection(db, ORDERS_COLLECTION), {
+        ...orderData,
+        orderNumber,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error("Error creating order:", error);
+      throw error;
+    }
+  }
+
+  static async getOrder(orderId: string): Promise<Order | null> {
+    if (!isFirebaseConfigured()) {
+      const order = localStorage.getItem(`order_${orderId}`);
+      return order ? JSON.parse(order) : null;
+    }
+
+    try {
+      const docRef = doc(db, ORDERS_COLLECTION, orderId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as Order;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error getting order:", error);
+      throw error;
+    }
+  }
+
+  static async updateOrder(orderId: string, updates: Partial<Order>) {
+    if (!isFirebaseConfigured()) {
+      const order = localStorage.getItem(`order_${orderId}`);
+      if (order) {
+        const updatedOrder = {
+          ...JSON.parse(order),
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(`order_${orderId}`, JSON.stringify(updatedOrder));
+      }
+      return;
+    }
+
+    try {
+      const docRef = doc(db, ORDERS_COLLECTION, orderId);
+      await updateDoc(docRef, {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error updating order:", error);
+      throw error;
+    }
+  }
+
+  static async getOrdersByEmail(email: string): Promise<Order[]> {
+    if (!isFirebaseConfigured()) {
+      // Get all orders from localStorage for demo
+      const orders: Order[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith("order_")) {
+          const order = JSON.parse(localStorage.getItem(key)!);
+          if (order.customerInfo.email === email) {
+            orders.push(order);
+          }
+        }
+      }
+      return orders.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    }
+
+    try {
+      const q = query(
+        collection(db, ORDERS_COLLECTION),
+        where("customerInfo.email", "==", email),
+        orderBy("createdAt", "desc"),
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Order[];
+    } catch (error) {
+      console.error("Error getting orders by email:", error);
+      return [];
+    }
   }
 }
 
