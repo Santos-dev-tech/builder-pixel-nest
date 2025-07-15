@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FirebaseStatus } from "@/components/FirebaseStatus";
+import { UserDropdown } from "@/components/UserDropdown";
 
 export default function Index() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
