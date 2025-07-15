@@ -47,12 +47,21 @@ export function UserDropdown() {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user_profile");
-    localStorage.removeItem("shopping_cart");
-    alert("Logged out successfully!");
-    setIsOpen(false);
-    window.location.href = "/";
+  const handleLogout = async () => {
+    try {
+      await AuthService.signOut();
+      setUserProfile(null);
+      setIsOpen(false);
+      alert("Logged out successfully!");
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
+  const handleLoginSuccess = () => {
+    loadCurrentUser();
+    setShowLoginModal(false);
   };
 
   return (
