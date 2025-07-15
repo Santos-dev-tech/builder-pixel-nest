@@ -92,32 +92,33 @@ export default function Admin() {
   };
 
   const loadOrders = async () => {
-    setLoading(true);
     try {
-      // For demo, get orders from localStorage since we don't have user auth
-      const allOrders: Order[] = [];
-
-      // Get orders from localStorage (demo mode)
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key?.startsWith("order_")) {
-          const order = JSON.parse(localStorage.getItem(key)!);
-          allOrders.push(order);
-        }
-      }
-
-      // Sort by creation date (newest first)
-      allOrders.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-
+      const allOrders = await AdminService.getAllOrders();
       setOrders(allOrders);
     } catch (error) {
       console.error("Error loading orders:", error);
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const handleUpdateOrderStatus = async (
+    orderId: string,
+    status: Order["status"],
+  ) => {
+    try {
+      await AdminService.updateOrderStatus(orderId, status);
+      await loadOrders(); // Refresh orders
+      alert("Order status updated successfully!");
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      alert("Failed to update order status");
+    }
+  };
+
+  const handleExportOrders = () => {
+    AdminService.downloadOrdersCSV(
+      filteredOrders,
+      `styleco_orders_${new Date().toISOString().split("T")[0]}.csv`,
+    );
   };
 
   const formatPrice = (price: number) => {
