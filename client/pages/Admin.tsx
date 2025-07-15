@@ -562,7 +562,7 @@ export default function Admin() {
               </div>
             ) : (
               <div className="space-y-4">
-                {orders.map((order) => (
+                {filteredOrders.map((order) => (
                   <div
                     key={order.id}
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border hover:border-gray-300 transition-colors"
