@@ -1,462 +1,451 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  ProductService,
+  CartService,
+  type Product,
+} from "@/lib/productService";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowRight,
-  Star,
-  MapPin,
-  Phone,
-  Mail,
-  Instagram,
-  Facebook,
-  Twitter,
-  Camera,
+  ShoppingCart,
+  Search,
+  Menu,
   Heart,
-  Award,
-  Users,
-  Calendar,
-  ChevronDown,
+  Star,
+  ArrowRight,
+  Truck,
+  Shield,
+  RotateCcw,
+  User,
+  Shirt,
 } from "lucide-react";
 
 export default function Index() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const heroImages = [
-    "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?w=800&h=600&fit=crop",
-  ];
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [cartItemsCount, setCartItemsCount] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
-    return () => clearInterval(timer);
+    fetchProducts();
+    updateCartCount();
   }, []);
 
-  const services = [
-    {
-      title: "Portrait Photography",
-      description: "Beautiful, timeless portraits that capture your essence",
-      price: "Starting at $150",
-      icon: <Camera className="h-6 w-6" />,
-    },
-    {
-      title: "Event Photography",
-      description: "Weddings, parties, and special moments preserved forever",
-      price: "Starting at $500",
-      icon: <Heart className="h-6 w-6" />,
-    },
-    {
-      title: "Commercial Shoots",
-      description: "Professional photography for your business needs",
-      price: "Starting at $300",
-      icon: <Award className="h-6 w-6" />,
-    },
-  ];
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const [featured, all] = await Promise.all([
+        ProductService.getFeaturedProducts(),
+        ProductService.getAllProducts(),
+      ]);
+      setFeaturedProducts(featured);
+      setAllProducts(all);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Bride",
-      text: "Carly captured our wedding day perfectly. Every photo tells our love story beautifully.",
-      rating: 5,
-    },
-    {
-      name: "Michael Chen",
-      role: "Business Owner",
-      text: "Professional, creative, and delivered exactly what we needed for our brand.",
-      rating: 5,
-    },
-    {
-      name: "Emily Davis",
-      role: "Family Client",
-      text: "Amazing experience! Carly made us feel comfortable and the photos are stunning.",
-      rating: 5,
-    },
-  ];
+  const updateCartCount = () => {
+    setCartItemsCount(CartService.getCartItemsCount());
+  };
+
+  const addToCart = (
+    product: Product,
+    size: string = "M",
+    color: string = "Black",
+  ) => {
+    CartService.addToCart({
+      productId: product.id!,
+      product,
+      size,
+      color,
+      quantity: 1,
+    });
+    updateCartCount();
+  };
+
+  const categories = ProductService.getCategories();
 
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-slate-200 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto container-padding">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
             <div className="flex items-center">
-              <Camera className="h-8 w-8 text-rose-600" />
-              <span className="ml-2 text-xl font-bold text-slate-800">
-                Carly
+              <Shirt className="h-8 w-8 text-orange-500" />
+              <span className="ml-2 text-xl font-bold text-gray-900">
+                StyleCo
               </span>
             </div>
-            <div className="hidden md:flex space-x-8">
-              <a
-                href="#home"
-                className="text-slate-700 hover:text-rose-600 transition-colors"
-              >
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#home" className="nav-link">
                 Home
               </a>
-              <a
-                href="#about"
-                className="text-slate-700 hover:text-rose-600 transition-colors"
-              >
+              <a href="#products" className="nav-link">
+                Shop
+              </a>
+              <a href="#categories" className="nav-link">
+                Categories
+              </a>
+              <a href="#about" className="nav-link">
                 About
               </a>
-              <a
-                href="#services"
-                className="text-slate-700 hover:text-rose-600 transition-colors"
-              >
-                Services
-              </a>
-              <a
-                href="#portfolio"
-                className="text-slate-700 hover:text-rose-600 transition-colors"
-              >
-                Portfolio
-              </a>
-              <a
-                href="#contact"
-                className="text-slate-700 hover:text-rose-600 transition-colors"
-              >
+              <a href="#contact" className="nav-link">
                 Contact
               </a>
             </div>
-            <Button className="bg-rose-600 hover:bg-rose-700">Book Now</Button>
+
+            {/* Search & Actions */}
+            <div className="flex items-center space-x-4">
+              <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-2">
+                <Search className="h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="ml-2 bg-transparent outline-none text-sm"
+                />
+              </div>
+              <Button variant="ghost" size="sm">
+                <Heart className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <User className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="sm" className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                {cartItemsCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartItemsCount}
+                  </Badge>
+                )}
+              </Button>
+              <Button variant="ghost" size="sm" className="md:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
       <section id="home" className="relative h-screen flex items-center">
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0">
           <img
-            src={heroImages[currentImageIndex]}
-            alt="Photography"
-            className="w-full h-full object-cover transition-opacity duration-1000"
+            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&h=900&fit=crop"
+            alt="Fashion"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 hero-gradient" />
         </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Capturing Life's
-            <span className="text-rose-400 block">Beautiful Moments</span>
-          </h1>
-          <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
-            Professional photographer specializing in portraits, events, and
-            commercial photography. Let's create something beautiful together.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-rose-600 hover:bg-rose-700">
-              View Portfolio
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-slate-800"
-            >
-              Get In Touch
-            </Button>
-          </div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
-          <ChevronDown className="h-6 w-6" />
-        </div>
-      </section>
 
-      {/* About Section */}
-      <section id="about" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-6">
-                Hi, I'm Carly
-              </h2>
-              <p className="text-lg text-slate-600 mb-6">
-                With over 8 years of experience in photography, I specialize in
-                capturing authentic moments that tell your unique story. My
-                passion lies in creating timeless images that you'll treasure
-                forever.
-              </p>
-              <p className="text-lg text-slate-600 mb-8">
-                Whether it's your wedding day, a family portrait, or commercial
-                project, I bring creativity, professionalism, and a keen eye for
-                detail to every shoot.
-              </p>
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-rose-600 mb-2">
-                    500+
-                  </div>
-                  <div className="text-sm text-slate-600">Happy Clients</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-rose-600 mb-2">
-                    200+
-                  </div>
-                  <div className="text-sm text-slate-600">Events Captured</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-rose-600 mb-2">8</div>
-                  <div className="text-sm text-slate-600">Years Experience</div>
-                </div>
-              </div>
-              <Button className="bg-rose-600 hover:bg-rose-700">
-                Learn More About Me
+        <div className="relative z-10 max-w-7xl mx-auto container-padding">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 fade-in-up">
+              Discover Your
+              <span className="text-gradient block">Perfect Style</span>
+            </h1>
+            <p className="text-xl text-gray-200 mb-8 fade-in-up">
+              Shop the latest fashion trends with our curated collection of
+              premium clothing for every occasion.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 fade-in-up">
+              <Button size="lg" className="btn-primary">
+                Shop Collection
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-gray-900"
+              >
+                View Lookbook
               </Button>
             </div>
-            <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=600&h=700&fit=crop"
-                alt="Carly"
-                className="rounded-lg shadow-2xl"
-              />
-              <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-lg shadow-lg">
-                <div className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <span className="font-semibold">5.0 Rating</span>
-                </div>
-                <p className="text-sm text-slate-600">Based on 150+ reviews</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto container-padding">
+          <div className="grid md:grid-cols-3 gap-8 stagger-animation">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Truck className="h-8 w-8 text-orange-500" />
               </div>
+              <h3 className="text-lg font-semibold mb-2">Free Shipping</h3>
+              <p className="text-gray-600">Free delivery on orders over $50</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-8 w-8 text-orange-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Secure Payment</h3>
+              <p className="text-gray-600">Your payment information is safe</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <RotateCcw className="h-8 w-8 text-orange-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Easy Returns</h3>
+              <p className="text-gray-600">30-day return policy</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Categories */}
+      <section id="categories" className="section-padding">
+        <div className="max-w-7xl mx-auto container-padding">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
-              My Services
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Shop by Category
             </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Professional photography services tailored to capture your most
-              important moments with style and creativity.
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Explore our diverse range of clothing categories to find exactly
+              what you're looking for.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <Card
-                key={index}
-                className="text-center hover:shadow-lg transition-shadow"
-              >
-                <CardHeader>
-                  <div className="w-12 h-12 bg-rose-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <div className="text-rose-600">{service.icon}</div>
-                  </div>
-                  <CardTitle className="text-xl">{service.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-600 mb-4">{service.description}</p>
-                  <Badge variant="secondary" className="mb-4">
-                    {service.price}
-                  </Badge>
-                  <Button className="w-full bg-rose-600 hover:bg-rose-700">
-                    Learn More
-                  </Button>
-                </CardContent>
-              </Card>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {categories.map((category, index) => (
+              <div key={category} className="text-center group cursor-pointer">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-100 transition-colors">
+                  <Shirt className="h-8 w-8 text-gray-600 group-hover:text-orange-500" />
+                </div>
+                <h3 className="font-medium text-gray-900 group-hover:text-orange-500 transition-colors">
+                  {category}
+                </h3>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Portfolio Preview */}
-      <section id="portfolio" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Featured Products */}
+      <section id="products" className="section-padding bg-gray-50">
+        <div className="max-w-7xl mx-auto container-padding">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
-              Recent Work
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Featured Products
             </h2>
-            <p className="text-lg text-slate-600">
-              A glimpse into some of my favorite captures
+            <p className="text-lg text-gray-600">
+              Discover our hand-picked selection of trending items
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=400&h=400&fit=crop",
-              "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=400&fit=crop",
-              "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&h=400&fit=crop",
-              "https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=400&fit=crop",
-              "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=400&fit=crop",
-              "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=400&fit=crop",
-            ].map((src, index) => (
-              <div
-                key={index}
-                className="relative group overflow-hidden rounded-lg aspect-square"
-              >
-                <img
-                  src={src}
-                  alt={`Portfolio ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Button variant="ghost" className="text-white">
-                    View Details
-                  </Button>
+
+          {loading ? (
+            <div className="products-grid">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="product-card animate-pulse">
+                  <div className="aspect-product bg-gray-200" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded" />
+                    <div className="h-4 bg-gray-200 rounded w-2/3" />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="products-grid">
+              {featuredProducts.map((product) => (
+                <Card key={product.id} className="product-card">
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="product-image"
+                    />
+                    {product.salePrice && (
+                      <Badge className="badge-sale">Sale</Badge>
+                    )}
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button
+                        size="sm"
+                        className="bg-white text-gray-900 hover:bg-gray-100"
+                        onClick={() => addToCart(product)}
+                      >
+                        Quick Add
+                      </Button>
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {product.salePrice ? (
+                          <>
+                            <span className="font-bold text-orange-500">
+                              ${product.salePrice}
+                            </span>
+                            <span className="text-sm text-gray-500 line-through">
+                              ${product.price}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-bold text-gray-900">
+                            ${product.price}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                        <span className="text-sm text-gray-600 ml-1">4.8</span>
+                      </div>
+                    </div>
+                    <Button
+                      className="w-full mt-4 btn-primary"
+                      onClick={() => addToCart(product)}
+                    >
+                      Add to Cart
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
           <div className="text-center mt-12">
-            <Button size="lg" className="bg-rose-600 hover:bg-rose-700">
-              View Full Portfolio
+            <Button size="lg" variant="outline" className="btn-outline">
+              View All Products
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
-              What Clients Say
-            </h2>
-            <p className="text-lg text-slate-600">
-              Don't just take my word for it
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="text-center">
-                <CardContent className="pt-6">
-                  <div className="flex justify-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-5 w-5 text-yellow-400 fill-current"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-slate-600 mb-6">"{testimonial.text}"</p>
-                  <div>
-                    <div className="font-semibold text-slate-800">
-                      {testimonial.name}
-                    </div>
-                    <div className="text-sm text-slate-500">
-                      {testimonial.role}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-20 bg-slate-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Let's Create Something Beautiful
-            </h2>
-            <p className="text-lg text-slate-300">
-              Ready to capture your special moments? Get in touch!
-            </p>
-          </div>
-          <div className="grid lg:grid-cols-2 gap-12">
-            <div>
-              <h3 className="text-2xl font-semibold mb-8">Get In Touch</h3>
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <MapPin className="h-6 w-6 text-rose-400" />
-                  <div>
-                    <div className="font-semibold">Studio Location</div>
-                    <div className="text-slate-300">
-                      123 Photography Lane, Creative District
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Phone className="h-6 w-6 text-rose-400" />
-                  <div>
-                    <div className="font-semibold">Phone</div>
-                    <div className="text-slate-300">(555) 123-4567</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Mail className="h-6 w-6 text-rose-400" />
-                  <div>
-                    <div className="font-semibold">Email</div>
-                    <div className="text-slate-300">hello@carlyphoto.com</div>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-8">
-                <div className="font-semibold mb-4">Follow Me</div>
-                <div className="flex gap-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:text-rose-400"
-                  >
-                    <Instagram className="h-5 w-5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:text-rose-400"
-                  >
-                    <Facebook className="h-5 w-5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:text-rose-400"
-                  >
-                    <Twitter className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="bg-slate-700 p-8 rounded-lg">
-              <h3 className="text-2xl font-semibold mb-6">Send a Message</h3>
-              <form className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="First Name"
-                    className="bg-slate-600 border border-slate-500 rounded-md px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Last Name"
-                    className="bg-slate-600 border border-slate-500 rounded-md px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                  />
-                </div>
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  className="w-full bg-slate-600 border border-slate-500 rounded-md px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                />
-                <textarea
-                  placeholder="Tell me about your project..."
-                  rows={4}
-                  className="w-full bg-slate-600 border border-slate-500 rounded-md px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                ></textarea>
-                <Button className="w-full bg-rose-600 hover:bg-rose-700">
-                  Send Message
-                </Button>
-              </form>
-            </div>
+      {/* Newsletter */}
+      <section className="section-padding bg-gray-900 text-white">
+        <div className="max-w-7xl mx-auto container-padding text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Stay in Style</h2>
+          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            Subscribe to our newsletter and be the first to know about new
+            arrivals, sales, and exclusive offers.
+          </p>
+          <div className="flex flex-col sm:flex-row max-w-md mx-auto gap-4">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="form-input flex-1 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+            />
+            <Button className="btn-secondary">Subscribe</Button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-4 md:mb-0">
-              <Camera className="h-6 w-6 text-rose-400" />
-              <span className="ml-2 text-lg font-semibold">Carly</span>
+      <footer className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto container-padding">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center mb-4">
+                <Shirt className="h-8 w-8 text-orange-500" />
+                <span className="ml-2 text-xl font-bold">StyleCo</span>
+              </div>
+              <p className="text-gray-400 mb-4">
+                Your destination for premium fashion and style.
+              </p>
+              <div className="flex space-x-4">
+                {/* Social links would go here */}
+              </div>
             </div>
-            <div className="text-slate-400 text-sm">
-              © 2024 Carly Photography. All rights reserved.
+
+            <div>
+              <h3 className="font-semibold mb-4">Shop</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    New Arrivals
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Best Sellers
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Sale
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Gift Cards
+                  </a>
+                </li>
+              </ul>
             </div>
+
+            <div>
+              <h3 className="font-semibold mb-4">Customer Care</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Contact Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Size Guide
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Returns
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    FAQ
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Terms of Service
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 StyleCo. All rights reserved.</p>
           </div>
         </div>
       </footer>
