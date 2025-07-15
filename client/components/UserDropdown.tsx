@@ -1,6 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Package, Settings, ChevronDown, LogIn } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Package,
+  Settings,
+  ChevronDown,
+  LogIn,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthService, type UserProfile } from "@/lib/authService";
 import { LoginModal } from "./LoginModal";
@@ -11,7 +18,7 @@ export function UserDropdown() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const loadCurrentUser = async () => {
+  const loadCurrentUser = async () => {
     try {
       const user = await AuthService.getCurrentUser();
       setUserProfile(user);
@@ -40,7 +47,7 @@ export function UserDropdown() {
     };
   }, []);
 
-    const handleLogout = async () => {
+  const handleLogout = async () => {
     try {
       await AuthService.signOut();
       setUserProfile(null);
@@ -57,7 +64,7 @@ export function UserDropdown() {
     setShowLoginModal(false);
   };
 
-    return (
+  return (
     <>
       <div className="relative" ref={dropdownRef}>
         <Button
@@ -77,71 +84,112 @@ export function UserDropdown() {
           <ChevronDown className="h-3 w-3" />
         </Button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
-          <div className="py-1">
-            {/* User Info */}
-            {userProfile && (
-              <div className="px-4 py-3 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {userProfile.firstName} {userProfile.lastName}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {userProfile.email}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Menu Items */}
+        {isOpen && (
+          <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
             <div className="py-1">
-              <Link
-                to="/profile"
-                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                <User className="h-4 w-4" />
-                My Profile
-              </Link>
+              {userProfile ? (
+                <>
+                  {/* User Info */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {userProfile.firstName} {userProfile.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {userProfile.email}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-              <Link
-                to="/profile"
-                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                <Package className="h-4 w-4" />
-                Order History
-              </Link>
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    <Link
+                      to="/profile"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <User className="h-4 w-4" />
+                      My Profile
+                    </Link>
 
-              <Link
-                to="/profile"
-                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                <Settings className="h-4 w-4" />
-                Account Settings
-              </Link>
-            </div>
+                    <Link
+                      to="/profile"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Package className="h-4 w-4" />
+                      Order History
+                    </Link>
 
-            {/* Logout */}
-            <div className="border-t border-gray-100 py-1">
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
+                    <Link
+                      to="/profile"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Settings className="h-4 w-4" />
+                      Account Settings
+                    </Link>
+                  </div>
+
+                  {/* Logout */}
+                  <div className="border-t border-gray-100 py-1">
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Not authenticated - show login option */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm text-gray-600">Welcome to StyleCo</p>
+                    <p className="text-xs text-gray-500">
+                      Sign in to access your account
+                    </p>
+                  </div>
+
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        setShowLoginModal(true);
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      Sign In / Sign Up
+                    </button>
+
+                    <Link
+                      to="/admin"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Settings className="h-4 w-4" />
+                      Admin Panel
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+    </>
   );
 }
