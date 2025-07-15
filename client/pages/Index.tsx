@@ -19,6 +19,9 @@ import {
   RotateCcw,
   User,
   Shirt,
+  Facebook,
+  Instagram,
+  Twitter,
 } from "lucide-react";
 
 export default function Index() {
@@ -361,7 +364,27 @@ export default function Index() {
                 Your destination for premium fashion and style.
               </p>
               <div className="flex space-x-4">
-                {/* Social links would go here */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-white"
+                >
+                  <Facebook className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-white"
+                >
+                  <Instagram className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-white"
+                >
+                  <Twitter className="h-5 w-5" />
+                </Button>
               </div>
             </div>
 
