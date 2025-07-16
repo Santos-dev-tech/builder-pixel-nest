@@ -16,12 +16,27 @@ export function FirebaseStatus() {
 
   const checkFirebaseStatus = async () => {
     try {
+      console.log("🔍 Checking Firebase status...");
       if (isFirebaseAvailable()) {
+        console.log("✅ Firebase is available, testing connection...");
         // Firebase is properly configured and available
         try {
           const products = await ProductService.getAllProducts();
           setProductCount(products.length);
-          setStatus("connected");
+
+          // Check if we got real Firebase products (they should have Firebase IDs)
+          const hasFirebaseProducts = products.some(
+            (product) =>
+              product.id && product.id.length > 10 && product.createdAt,
+          );
+
+          if (hasFirebaseProducts) {
+            console.log("✅ Using real Firebase products");
+            setStatus("connected");
+          } else {
+            console.log("📦 Products initialized from demo data in Firebase");
+            setStatus("connected"); // Still connected, just using initialized demo data
+          }
         } catch (error) {
           console.error("Firebase connection test failed:", error);
           if (error.message?.includes("Failed to fetch")) {
@@ -32,11 +47,13 @@ export function FirebaseStatus() {
           setStatus("error");
         }
       } else if (isFirebaseConfigured()) {
+        console.log("⚠️ Firebase configured but not available");
         // Firebase is configured but not available (error state)
         const products = await ProductService.getAllProducts();
         setProductCount(products.length);
         setStatus("error");
       } else {
+        console.log("🎭 Firebase not configured - demo mode");
         // Using demo mode (not configured)
         const products = await ProductService.getAllProducts();
         setProductCount(products.length);
