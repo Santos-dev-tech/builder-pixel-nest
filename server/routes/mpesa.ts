@@ -129,12 +129,15 @@ export const handleStkPush: RequestHandler = async (req, res) => {
     );
 
     // Prepare STK Push payload
+    // Use amount 1 for testing as per Safaricom recommendation
+    const testAmount = mpesaConfig.environment === "sandbox" ? 1 : amount;
+
     const stkPushPayload = {
       BusinessShortCode: mpesaConfig.businessShortCode,
       Password: password,
       Timestamp: timestamp,
       TransactionType: "CustomerPayBillOnline",
-      Amount: amount,
+      Amount: testAmount,
       PartyA: phone,
       PartyB: mpesaConfig.businessShortCode,
       PhoneNumber: phone,
