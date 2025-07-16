@@ -86,7 +86,7 @@ export default function Index() {
             <Link to="/" className="flex items-center">
               <Shirt className="h-8 w-8 text-orange-500" />
               <span className="ml-2 text-xl font-bold text-gray-900">
-                StyleCo
+                SZN by Ondieki
               </span>
             </Link>
 
@@ -366,7 +366,7 @@ export default function Index() {
             <div>
               <div className="flex items-center mb-4">
                 <Shirt className="h-8 w-8 text-orange-500" />
-                <span className="ml-2 text-xl font-bold">StyleCo</span>
+                <span className="ml-2 text-xl font-bold">SZN by Ondieki</span>
               </div>
               <p className="text-gray-400 mb-4">
                 Your destination for premium fashion and style.
@@ -476,7 +476,7 @@ export default function Index() {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 StyleCo. All rights reserved.</p>
+            <p>&copy; 2024 SZN by Ondieki. All rights reserved.</p>
           </div>
         </div>
       </footer>
