@@ -355,16 +355,26 @@ export class ProductService {
     }
 
     try {
+      // Use simple query without orderBy to avoid index requirement
       const q = query(
         collection(db, PRODUCTS_COLLECTION),
         where("category", "==", category),
-        orderBy("createdAt", "desc"),
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map((doc) => ({
+      const products = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
+
+      // Sort client-side by createdAt if available
+      products.sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return b.createdAt.toMillis() - a.createdAt.toMillis();
+        }
+        return 0;
+      });
+
+      return products;
     } catch (error) {
       console.error("Error getting products by category:", error);
       return DEMO_PRODUCTS.filter((p) => p.category === category);
