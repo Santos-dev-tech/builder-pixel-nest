@@ -146,6 +146,18 @@ export function UserDropdown() {
                       <Settings className="h-4 w-4" />
                       Account Settings
                     </Link>
+
+                    {/* Admin Dashboard Link - Only show for admin users */}
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 transition-colors border-t border-gray-100"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Shield className="h-4 w-4" />
+                        Admin Dashboard
+                      </Link>
+                    )}
                   </div>
 
                   {/* Logout */}
