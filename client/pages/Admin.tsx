@@ -628,10 +628,30 @@ export default function Admin() {
               </Button>
             </Link>
             <h1 className="text-3xl font-bold text-gray-900">
-              Order Management
+              Admin Dashboard
             </h1>
           </div>
           <FirebaseStatus />
+        </div>
+
+        {/* Tabs */}
+        <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg w-fit">
+          <Button
+            variant={activeTab === "orders" ? "default" : "ghost"}
+            onClick={() => setActiveTab("orders")}
+            className="flex items-center gap-2"
+          >
+            <Package className="h-4 w-4" />
+            Orders
+          </Button>
+          <Button
+            variant={activeTab === "products" ? "default" : "ghost"}
+            onClick={() => setActiveTab("products")}
+            className="flex items-center gap-2"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Products
+          </Button>
         </div>
 
         {/* Stats */}
