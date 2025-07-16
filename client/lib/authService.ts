@@ -13,7 +13,12 @@ import {
   updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { auth, db, isFirebaseConfigured } from "./firebase";
+import {
+  auth,
+  db,
+  isFirebaseConfigured,
+  isFirebaseAvailable,
+} from "./firebase";
 
 export interface UserProfile {
   uid: string;
