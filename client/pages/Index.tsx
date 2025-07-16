@@ -478,7 +478,8 @@ export default function Index() {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 SZN by Ondieki. All rights reserved.</p>
+            <p>&copy; 2025 SZN by Ondieki. All rights reserved.</p>
+            <p className="mt-2 text-sm">Website created by Carl*Zain</p>
           </div>
         </div>
       </footer>
