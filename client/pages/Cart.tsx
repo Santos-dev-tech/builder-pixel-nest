@@ -82,7 +82,7 @@ export default function Cart() {
   };
 
   const getTax = () => {
-    return getSubtotal() * 0.08; // 8% tax
+    return getSubtotal() * 0.16; // 16% VAT (Kenya)
   };
 
   const getTotal = () => {
