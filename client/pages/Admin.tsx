@@ -1,10 +1,24 @@
 import { useState, useEffect } from "react";
-import { OrderService, type Order } from "@/lib/productService";
+import {
+  OrderService,
+  ProductService,
+  type Order,
+  type Product,
+} from "@/lib/productService";
 import { AdminService, type AdminStats } from "@/lib/adminService";
 import { AuthService } from "@/lib/authService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ArrowLeft,
   Package,
@@ -18,6 +32,12 @@ import {
   Download,
   Search,
   Filter,
+  Plus,
+  Edit,
+  Trash2,
+  ShoppingBag,
+  Star,
+  StarOff,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FirebaseStatus } from "@/components/FirebaseStatus";
@@ -25,6 +45,7 @@ import { AdminSetup } from "@/components/AdminSetup";
 
 export default function Admin() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -32,6 +53,24 @@ export default function Admin() {
   const [showAdminSetup, setShowAdminSetup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [activeTab, setActiveTab] = useState<"orders" | "products">("orders");
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productForm, setProductForm] = useState<Partial<Product>>({
+    name: "",
+    description: "",
+    price: 0,
+    salePrice: 0,
+    images: [""],
+    category: "",
+    sizes: [],
+    colors: [],
+    inStock: true,
+    featured: false,
+    tags: [],
+    inventory: 0,
+    sku: "",
+  });
 
   useEffect(() => {
     initializeAdmin();
@@ -50,6 +89,7 @@ export default function Admin() {
 
       if (adminStatus) {
         await loadOrders();
+        await loadProducts();
         await loadStats();
       }
     } catch (error) {
@@ -97,6 +137,15 @@ export default function Admin() {
       setOrders(allOrders);
     } catch (error) {
       console.error("Error loading orders:", error);
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      const allProducts = await ProductService.getAllProducts();
+      setProducts(allProducts);
+    } catch (error) {
+      console.error("Error loading products:", error);
     }
   };
 
