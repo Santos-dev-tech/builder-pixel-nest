@@ -5,9 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Database, CloudOff, CheckCircle, AlertTriangle } from "lucide-react";
 
 export function FirebaseStatus() {
-  const [status, setStatus] = useState<"checking" | "connected" | "demo">(
-    "checking",
-  );
+  const [status, setStatus] = useState<
+    "checking" | "connected" | "demo" | "error"
+  >("checking");
   const [productCount, setProductCount] = useState<number>(0);
 
   useEffect(() => {
@@ -16,20 +16,25 @@ export function FirebaseStatus() {
 
   const checkFirebaseStatus = async () => {
     try {
-      if (isFirebaseConfigured()) {
-        // Try to fetch products to test connection
+      if (isFirebaseAvailable()) {
+        // Firebase is properly configured and available
         const products = await ProductService.getAllProducts();
         setProductCount(products.length);
         setStatus("connected");
+      } else if (isFirebaseConfigured()) {
+        // Firebase is configured but not available (error state)
+        const products = await ProductService.getAllProducts();
+        setProductCount(products.length);
+        setStatus("error");
       } else {
-        // Using demo mode
+        // Using demo mode (not configured)
         const products = await ProductService.getAllProducts();
         setProductCount(products.length);
         setStatus("demo");
       }
     } catch (error) {
       console.error("Firebase connection test failed:", error);
-      setStatus("demo");
+      setStatus("error");
     }
   };
 
