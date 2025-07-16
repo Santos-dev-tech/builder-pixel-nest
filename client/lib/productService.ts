@@ -201,7 +201,7 @@ const DEMO_PRODUCTS: Product[] = [
 export class ProductService {
   // Initialize demo products in Firebase (run once)
   static async initializeDemoProducts(): Promise<boolean> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       console.log(
         "Firebase not configured, skipping demo product initialization",
       );
@@ -235,7 +235,7 @@ export class ProductService {
   static async createProduct(
     productData: Omit<Product, "id" | "createdAt" | "updatedAt">,
   ): Promise<string> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       throw new Error("Firebase not configured");
     }
 
@@ -254,7 +254,7 @@ export class ProductService {
 
   static async getProduct(productId: string): Promise<Product | null> {
     // Return demo product if Firebase not configured
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       return DEMO_PRODUCTS.find((p) => p.id === productId) || null;
     }
 
@@ -275,7 +275,7 @@ export class ProductService {
 
   static async getAllProducts(): Promise<Product[]> {
     // Return demo products if Firebase not configured
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       return DEMO_PRODUCTS;
     }
 
@@ -302,7 +302,7 @@ export class ProductService {
 
   static async getFeaturedProducts(): Promise<Product[]> {
     // Return demo featured products if Firebase not configured
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       return DEMO_PRODUCTS.filter((p) => p.featured);
     }
 
@@ -332,7 +332,7 @@ export class ProductService {
 
   static async getProductsByCategory(category: string): Promise<Product[]> {
     // Return demo products by category if Firebase not configured
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       return DEMO_PRODUCTS.filter((p) => p.category === category);
     }
 
@@ -355,7 +355,7 @@ export class ProductService {
 
   static async searchProducts(searchTerm: string): Promise<Product[]> {
     // Simple search in demo products if Firebase not configured
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       const term = searchTerm.toLowerCase();
       return DEMO_PRODUCTS.filter(
         (p) =>
@@ -383,7 +383,7 @@ export class ProductService {
   }
 
   static async updateProduct(productId: string, updates: Partial<Product>) {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       throw new Error("Firebase not configured");
     }
 
@@ -400,7 +400,7 @@ export class ProductService {
   }
 
   static async deleteProduct(productId: string) {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       throw new Error("Firebase not configured");
     }
 
@@ -432,7 +432,7 @@ export class OrderService {
   static async createOrder(
     orderData: Omit<Order, "id" | "orderNumber" | "createdAt" | "updatedAt">,
   ): Promise<string> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       console.log("Firebase not configured, order saved to local storage");
       const orderId = Date.now().toString();
       const order = {
@@ -462,7 +462,7 @@ export class OrderService {
   }
 
   static async getOrder(orderId: string): Promise<Order | null> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       const order = localStorage.getItem(`order_${orderId}`);
       return order ? JSON.parse(order) : null;
     }
@@ -483,7 +483,7 @@ export class OrderService {
   }
 
   static async updateOrder(orderId: string, updates: Partial<Order>) {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       const order = localStorage.getItem(`order_${orderId}`);
       if (order) {
         const updatedOrder = {
@@ -509,7 +509,7 @@ export class OrderService {
   }
 
   static async getOrdersByEmail(email: string): Promise<Order[]> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Get all orders from localStorage for demo
       const orders: Order[] = [];
       for (let i = 0; i < localStorage.length; i++) {
