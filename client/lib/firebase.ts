@@ -66,6 +66,7 @@ export const getFirebaseServices = () => {
 
 // Admin users list (in production, store this in Firestore with proper security)
 export const ADMIN_EMAILS = [
+  "kerosicarl@gmail.com", // Main admin user
   "admin@styleco.com", // Default admin email
   "owner@styleco.com", // Add more admin emails here
   // Add other admin emails here
