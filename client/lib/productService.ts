@@ -14,7 +14,7 @@ import {
   serverTimestamp,
   writeBatch,
 } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "./firebase";
+import { db, isFirebaseConfigured, isFirebaseAvailable } from "./firebase";
 
 export interface Product {
   id?: string;
