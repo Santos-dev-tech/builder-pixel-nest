@@ -964,16 +964,12 @@ export default function Admin() {
                         setProductForm((prev) => ({ ...prev, category: value }))
                       }
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ProductService.getCategories().map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                      <option value="">Select category</option>
+                      {ProductService.getCategories().map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
                     </Select>
                   </div>
 
