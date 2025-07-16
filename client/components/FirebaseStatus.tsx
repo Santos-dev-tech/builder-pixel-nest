@@ -18,9 +18,19 @@ export function FirebaseStatus() {
     try {
       if (isFirebaseAvailable()) {
         // Firebase is properly configured and available
-        const products = await ProductService.getAllProducts();
-        setProductCount(products.length);
-        setStatus("connected");
+        try {
+          const products = await ProductService.getAllProducts();
+          setProductCount(products.length);
+          setStatus("connected");
+        } catch (error) {
+          console.error("Firebase connection test failed:", error);
+          if (error.message?.includes("Failed to fetch")) {
+            console.log("🌐 Network connectivity issue detected");
+          }
+          const products = await ProductService.getAllProducts(); // This will return demo products
+          setProductCount(products.length);
+          setStatus("error");
+        }
       } else if (isFirebaseConfigured()) {
         // Firebase is configured but not available (error state)
         const products = await ProductService.getAllProducts();
@@ -34,6 +44,7 @@ export function FirebaseStatus() {
       }
     } catch (error) {
       console.error("Firebase connection test failed:", error);
+      setProductCount(6); // Default demo product count
       setStatus("error");
     }
   };
