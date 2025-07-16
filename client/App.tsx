@@ -11,6 +11,7 @@ import Cart from "./pages/Cart";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { FirebaseErrorBoundary } from "@/components/FirebaseErrorBoundary";
 
 const queryClient = new QueryClient();
 
