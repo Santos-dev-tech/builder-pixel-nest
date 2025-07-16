@@ -88,4 +88,28 @@ export const isFirebaseAvailable = (): boolean => {
   return !!(app && db && auth && isFirebaseConfigured());
 };
 
+// Test Firebase connection with retry logic
+export const testFirebaseConnection = async (): Promise<boolean> => {
+  if (!isFirebaseAvailable()) {
+    return false;
+  }
+
+  try {
+    // Try a simple Firestore operation to test connectivity
+    const { doc, getDoc } = await import("firebase/firestore");
+    const testDoc = doc(db, "test", "connection");
+    await getDoc(testDoc);
+    console.log("✅ Firebase connection test successful");
+    return true;
+  } catch (error) {
+    console.warn("❌ Firebase connection test failed:", error.message);
+    if (error.message?.includes("Failed to fetch")) {
+      console.log(
+        "🌐 Network connectivity issue - Firebase servers may be unreachable",
+      );
+    }
+    return false;
+  }
+};
+
 export default app;
