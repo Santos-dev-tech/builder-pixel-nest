@@ -41,6 +41,9 @@ try {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     auth = getAuth(app);
+
+    // Test the connection
+    console.log("📡 Testing Firebase connection...");
   } else {
     console.log("🎭 Firebase not configured - running in demo mode");
     console.log("📖 See FIREBASE_AUTH_SETUP.md for setup instructions");
@@ -48,6 +51,10 @@ try {
 } catch (error) {
   console.error("❌ Firebase initialization failed:", error);
   console.log("🎭 Falling back to demo mode");
+  console.log("💡 This might be due to:");
+  console.log("  - Network connectivity issues");
+  console.log("  - Invalid Firebase configuration");
+  console.log("  - Firebase project doesn't exist");
   app = null;
   db = null;
   auth = null;
