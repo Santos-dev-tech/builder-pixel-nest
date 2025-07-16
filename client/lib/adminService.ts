@@ -55,7 +55,7 @@ export class AdminService {
 
   // Get all orders for admin dashboard
   static async getAllOrders(): Promise<Order[]> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode - get orders from localStorage
       const orders: Order[] = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -133,7 +133,7 @@ export class AdminService {
     orderId: string,
     status: Order["status"],
   ): Promise<void> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode - update localStorage
       const order = localStorage.getItem(`order_${orderId}`);
       if (order) {
@@ -164,7 +164,7 @@ export class AdminService {
     orderId: string,
     paymentStatus: Order["paymentStatus"],
   ): Promise<void> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode
       const order = localStorage.getItem(`order_${orderId}`);
       if (order) {
@@ -192,7 +192,7 @@ export class AdminService {
 
   // Get all users (admin only)
   static async getAllUsers(): Promise<UserProfile[]> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode - return current user
       const currentUser = await AuthService.getCurrentUser();
       return currentUser ? [currentUser] : [];
