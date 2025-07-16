@@ -7,9 +7,11 @@ import {
   Settings,
   ChevronDown,
   LogIn,
+  Shield,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthService, type UserProfile } from "@/lib/authService";
+import { AdminService } from "@/lib/adminService";
 import { LoginModal } from "./LoginModal";
 
 export function UserDropdown() {
