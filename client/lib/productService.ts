@@ -286,10 +286,20 @@ export class ProductService {
         ...doc.data(),
       })) as Product[];
 
-      // If no products found, initialize demo products
+      // If no products found, try to initialize demo products but don't fail if permissions are insufficient
       if (products.length === 0) {
-        await this.initializeDemoProducts();
-        return DEMO_PRODUCTS;
+        try {
+          await this.initializeDemoProducts();
+          // If successful, return demo products
+          return DEMO_PRODUCTS;
+        } catch (initError) {
+          console.log(
+            "Could not initialize demo products (insufficient permissions), using local demo data:",
+            initError,
+          );
+          // Return local demo products as fallback
+          return DEMO_PRODUCTS;
+        }
       }
 
       return products;
