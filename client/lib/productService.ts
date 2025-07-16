@@ -322,6 +322,24 @@ export class ProductService {
       return products;
     } catch (error) {
       console.error("Error getting products:", error);
+
+      // Check for specific Firebase errors
+      if (
+        error.message?.includes("Failed to fetch") ||
+        error.code === "unavailable"
+      ) {
+        console.log(
+          "🌐 Firebase connection failed - using local demo products",
+        );
+        console.log(
+          "💡 This could be due to network issues or Firebase server problems",
+        );
+      } else if (error.code === "permission-denied") {
+        console.log(
+          "🔒 Firebase permission denied - using local demo products",
+        );
+      }
+
       // Return demo products as fallback
       return DEMO_PRODUCTS;
     }
