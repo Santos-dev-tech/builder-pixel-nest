@@ -10,7 +10,12 @@ import {
   deleteDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { db, isFirebaseConfigured, isAdminUser } from "./firebase";
+import {
+  db,
+  isFirebaseConfigured,
+  isFirebaseAvailable,
+  isAdminUser,
+} from "./firebase";
 import { AuthService, type UserProfile } from "./authService";
 import { OrderService, type Order } from "./productService";
 
