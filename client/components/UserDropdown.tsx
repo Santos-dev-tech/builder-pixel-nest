@@ -25,9 +25,18 @@ export function UserDropdown() {
     try {
       const user = await AuthService.getCurrentUser();
       setUserProfile(user);
+
+      // Check if user is admin
+      if (user) {
+        const adminStatus = await AdminService.isCurrentUserAdmin();
+        setIsAdmin(adminStatus);
+      } else {
+        setIsAdmin(false);
+      }
     } catch (error) {
       console.error("Error loading user:", error);
       setUserProfile(null);
+      setIsAdmin(false);
     }
   };
 
