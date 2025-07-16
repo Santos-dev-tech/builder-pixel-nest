@@ -41,7 +41,7 @@ export class AuthService {
     firstName: string,
     lastName: string,
   ): Promise<UserProfile> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode - create user in localStorage
       const user: UserProfile = {
         uid: Date.now().toString(),
@@ -94,7 +94,7 @@ export class AuthService {
   }
 
   static async signIn(email: string, password: string): Promise<UserProfile> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode - check localStorage
       const savedUser = localStorage.getItem("user_profile");
       if (savedUser) {
@@ -132,7 +132,7 @@ export class AuthService {
   }
 
   static async signOut(): Promise<void> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode - clear localStorage
       localStorage.removeItem("user_profile");
       localStorage.removeItem("auth_user");
@@ -149,7 +149,7 @@ export class AuthService {
   }
 
   static async getCurrentUser(): Promise<UserProfile | null> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode - get from localStorage
       const savedUser = localStorage.getItem("user_profile");
       return savedUser ? JSON.parse(savedUser) : null;
@@ -168,7 +168,7 @@ export class AuthService {
   }
 
   static async getUserProfile(uid: string): Promise<UserProfile | null> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       const savedUser = localStorage.getItem("user_profile");
       return savedUser ? JSON.parse(savedUser) : null;
     }
@@ -192,7 +192,7 @@ export class AuthService {
     uid: string,
     updates: Partial<UserProfile>,
   ): Promise<void> {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode - update localStorage
       const savedUser = localStorage.getItem("user_profile");
       if (savedUser) {
@@ -221,7 +221,7 @@ export class AuthService {
 
   // Utility methods
   static onAuthStateChange(callback: (user: UserProfile | null) => void) {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       // Demo mode - check localStorage periodically
       const checkAuth = () => {
         const savedUser = localStorage.getItem("user_profile");
@@ -242,7 +242,7 @@ export class AuthService {
   }
 
   static isAuthenticated(): boolean {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseAvailable()) {
       return localStorage.getItem("user_profile") !== null;
     }
 
