@@ -137,7 +137,7 @@ export function AdminSetup({ isOpen, onClose, onSuccess }: AdminSetupProps) {
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   className="pl-10"
-                  placeholder="admin@styleco.com"
+                  placeholder="admin@sznbyondieki.com"
                   required
                 />
               </div>
