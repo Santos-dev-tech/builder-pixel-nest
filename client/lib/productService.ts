@@ -307,16 +307,24 @@ export class ProductService {
     }
 
     try {
+      // Use simple query without orderBy to avoid index requirement
       const q = query(
         collection(db, PRODUCTS_COLLECTION),
         where("featured", "==", true),
-        orderBy("createdAt", "desc"),
       );
       const querySnapshot = await getDocs(q);
       const products = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
+
+      // Sort client-side by createdAt if available
+      products.sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return b.createdAt.toMillis() - a.createdAt.toMillis();
+        }
+        return 0;
+      });
 
       // If no featured products found, return demo featured products
       if (products.length === 0) {
