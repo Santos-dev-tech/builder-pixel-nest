@@ -223,10 +223,18 @@ export class ProductService {
       }
 
       await batch.commit();
-      console.log("Demo products initialized in Firebase");
+      console.log("✅ Demo products initialized in Firebase");
       return true;
     } catch (error) {
-      console.error("Error initializing demo products:", error);
+      if (error.code === "permission-denied") {
+        console.log(
+          "🔒 Cannot initialize demo products - insufficient permissions.\n" +
+            "This is normal if you haven't updated your Firestore security rules yet.\n" +
+            "The app will use local demo products instead.",
+        );
+      } else {
+        console.error("Error initializing demo products:", error);
+      }
       return false;
     }
   }
@@ -236,18 +244,27 @@ export class ProductService {
     productData: Omit<Product, "id" | "createdAt" | "updatedAt">,
   ): Promise<string> {
     if (!isFirebaseAvailable()) {
-      throw new Error("Firebase not configured");
+      throw new Error(
+        "Firebase not configured. Please check your Firebase connection and try again.",
+      );
     }
 
     try {
+      console.log("Creating product in Firebase...", productData);
       const docRef = await addDoc(collection(db, PRODUCTS_COLLECTION), {
         ...productData,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
+      console.log("Product created successfully with ID:", docRef.id);
       return docRef.id;
     } catch (error) {
       console.error("Error creating product:", error);
+      if (error.code === "permission-denied") {
+        throw new Error(
+          "Permission denied. Please make sure you're logged in as an admin and your Firestore security rules allow product creation.",
+        );
+      }
       throw error;
     }
   }
@@ -274,27 +291,86 @@ export class ProductService {
   }
 
   static async getAllProducts(): Promise<Product[]> {
+    console.log("🔍 getAllProducts called");
+    console.log("🔍 Firebase available:", isFirebaseAvailable());
+
     // Return demo products if Firebase not configured
     if (!isFirebaseAvailable()) {
+      console.log("❌ Firebase not available, returning demo products");
       return DEMO_PRODUCTS;
     }
 
     try {
+      console.log("🔍 Fetching products from Firebase...");
       const querySnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+      console.log(
+        "✅ Firebase query successful, found",
+        querySnapshot.docs.length,
+        "products",
+      );
+
       const products = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
 
-      // If no products found, initialize demo products
+      // If no products found, try to initialize demo products and then fetch them from Firebase
       if (products.length === 0) {
-        await this.initializeDemoProducts();
-        return DEMO_PRODUCTS;
+        console.log(
+          "📦 No products found in Firebase, initializing demo products...",
+        );
+        try {
+          const success = await this.initializeDemoProducts();
+          if (success) {
+            console.log(
+              "✅ Demo products initialized, fetching from Firebase...",
+            );
+            // Fetch the newly created products from Firebase
+            const newQuerySnapshot = await getDocs(
+              collection(db, PRODUCTS_COLLECTION),
+            );
+            const newProducts = newQuerySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            })) as Product[];
+            console.log(
+              "✅ Retrieved",
+              newProducts.length,
+              "products from Firebase",
+            );
+            return newProducts;
+          } else {
+            console.log("❌ Failed to initialize, using local demo data");
+            return DEMO_PRODUCTS;
+          }
+        } catch (initError) {
+          console.log("❌ Could not initialize demo products:", initError);
+          return DEMO_PRODUCTS;
+        }
       }
 
+      console.log("✅ Returning", products.length, "products from Firebase");
       return products;
     } catch (error) {
       console.error("Error getting products:", error);
+
+      // Check for specific Firebase errors
+      if (
+        error.message?.includes("Failed to fetch") ||
+        error.code === "unavailable"
+      ) {
+        console.log(
+          "🌐 Firebase connection failed - using local demo products",
+        );
+        console.log(
+          "💡 This could be due to network issues or Firebase server problems",
+        );
+      } else if (error.code === "permission-denied") {
+        console.log(
+          "🔒 Firebase permission denied - using local demo products",
+        );
+      }
+
       // Return demo products as fallback
       return DEMO_PRODUCTS;
     }
@@ -307,16 +383,24 @@ export class ProductService {
     }
 
     try {
+      // Use simple query without orderBy to avoid index requirement
       const q = query(
         collection(db, PRODUCTS_COLLECTION),
         where("featured", "==", true),
-        orderBy("createdAt", "desc"),
       );
       const querySnapshot = await getDocs(q);
       const products = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
+
+      // Sort client-side by createdAt if available
+      products.sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return b.createdAt.toMillis() - a.createdAt.toMillis();
+        }
+        return 0;
+      });
 
       // If no featured products found, return demo featured products
       if (products.length === 0) {
@@ -337,16 +421,26 @@ export class ProductService {
     }
 
     try {
+      // Use simple query without orderBy to avoid index requirement
       const q = query(
         collection(db, PRODUCTS_COLLECTION),
         where("category", "==", category),
-        orderBy("createdAt", "desc"),
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map((doc) => ({
+      const products = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
+
+      // Sort client-side by createdAt if available
+      products.sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return b.createdAt.toMillis() - a.createdAt.toMillis();
+        }
+        return 0;
+      });
+
+      return products;
     } catch (error) {
       console.error("Error getting products by category:", error);
       return DEMO_PRODUCTS.filter((p) => p.category === category);

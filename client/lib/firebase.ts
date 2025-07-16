@@ -41,6 +41,9 @@ try {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     auth = getAuth(app);
+
+    // Test the connection
+    console.log("📡 Testing Firebase connection...");
   } else {
     console.log("🎭 Firebase not configured - running in demo mode");
     console.log("📖 See FIREBASE_AUTH_SETUP.md for setup instructions");
@@ -48,6 +51,10 @@ try {
 } catch (error) {
   console.error("❌ Firebase initialization failed:", error);
   console.log("🎭 Falling back to demo mode");
+  console.log("💡 This might be due to:");
+  console.log("  - Network connectivity issues");
+  console.log("  - Invalid Firebase configuration");
+  console.log("  - Firebase project doesn't exist");
   app = null;
   db = null;
   auth = null;
@@ -79,6 +86,30 @@ export const isAdminUser = (email: string): boolean => {
 // Helper function to check if Firebase services are available
 export const isFirebaseAvailable = (): boolean => {
   return !!(app && db && auth && isFirebaseConfigured());
+};
+
+// Test Firebase connection with retry logic
+export const testFirebaseConnection = async (): Promise<boolean> => {
+  if (!isFirebaseAvailable()) {
+    return false;
+  }
+
+  try {
+    // Try a simple Firestore operation to test connectivity
+    const { doc, getDoc } = await import("firebase/firestore");
+    const testDoc = doc(db, "test", "connection");
+    await getDoc(testDoc);
+    console.log("✅ Firebase connection test successful");
+    return true;
+  } catch (error) {
+    console.warn("❌ Firebase connection test failed:", error.message);
+    if (error.message?.includes("Failed to fetch")) {
+      console.log(
+        "🌐 Network connectivity issue - Firebase servers may be unreachable",
+      );
+    }
+    return false;
+  }
 };
 
 export default app;

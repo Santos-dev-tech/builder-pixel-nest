@@ -7,24 +7,36 @@ import {
   Settings,
   ChevronDown,
   LogIn,
+  Shield,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthService, type UserProfile } from "@/lib/authService";
+import { AdminService } from "@/lib/adminService";
 import { LoginModal } from "./LoginModal";
 
 export function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const loadCurrentUser = async () => {
     try {
       const user = await AuthService.getCurrentUser();
       setUserProfile(user);
+
+      // Check if user is admin
+      if (user) {
+        const adminStatus = await AdminService.isCurrentUserAdmin();
+        setIsAdmin(adminStatus);
+      } else {
+        setIsAdmin(false);
+      }
     } catch (error) {
       console.error("Error loading user:", error);
       setUserProfile(null);
+      setIsAdmin(false);
     }
   };
 
@@ -134,6 +146,18 @@ export function UserDropdown() {
                       <Settings className="h-4 w-4" />
                       Account Settings
                     </Link>
+
+                    {/* Admin Dashboard Link - Only show for admin users */}
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 transition-colors border-t border-gray-100"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Shield className="h-4 w-4" />
+                        Admin Dashboard
+                      </Link>
+                    )}
                   </div>
 
                   {/* Logout */}
