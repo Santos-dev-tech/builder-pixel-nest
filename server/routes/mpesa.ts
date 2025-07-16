@@ -12,15 +12,15 @@ interface MpesaConfig {
 }
 
 const mpesaConfig: MpesaConfig = {
-  consumerKey: process.env.MPESA_CONSUMER_KEY || "your-consumer-key",
-  consumerSecret: process.env.MPESA_CONSUMER_SECRET || "your-consumer-secret",
+  consumerKey:
+    process.env.MPESA_CONSUMER_KEY || "GTWADFxIpUfDoNikNGqq1C3023evM6UH",
+  consumerSecret: process.env.MPESA_CONSUMER_SECRET || "amFbAoUByPV2rM5A",
   businessShortCode: process.env.MPESA_BUSINESS_SHORTCODE || "174379",
   passkey:
     process.env.MPESA_PASSKEY ||
     "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
   callbackUrl:
-    process.env.MPESA_CALLBACK_URL ||
-    "https://yourdomain.com/api/mpesa/callback",
+    process.env.MPESA_CALLBACK_URL || "https://coding.co.ke/api/confirm.php",
   environment:
     (process.env.MPESA_ENVIRONMENT as "sandbox" | "production") || "sandbox",
 };
