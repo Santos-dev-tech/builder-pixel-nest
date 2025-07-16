@@ -151,7 +151,9 @@ export function UserDropdown() {
                 <>
                   {/* Not authenticated - show login option */}
                   <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm text-gray-600">Welcome to StyleCo</p>
+                    <p className="text-sm text-gray-600">
+                      Welcome to SZN by Ondieki
+                    </p>
                     <p className="text-xs text-gray-500">
                       Sign in to access your account
                     </p>

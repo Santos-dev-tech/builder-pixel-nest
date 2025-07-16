@@ -78,11 +78,11 @@ export default function Cart() {
 
   const getShipping = () => {
     const subtotal = getSubtotal();
-    return subtotal > 50 ? 0 : 5.99;
+    return subtotal > 5000 ? 0 : 599;
   };
 
   const getTax = () => {
-    return getSubtotal() * 0.08; // 8% tax
+    return getSubtotal() * 0.16; // 16% VAT (Kenya)
   };
 
   const getTotal = () => {
@@ -154,7 +154,7 @@ export default function Cart() {
     const paymentData = {
       amount: Math.round(getTotal()),
       phone: phone,
-      description: `StyleCo Order - ${cartItems.length} items`,
+      description: `SZN by Ondieki Order - ${cartItems.length} items`,
       orderData: {
         items: cartItems,
         customerInfo: formData,
@@ -653,10 +653,10 @@ export default function Cart() {
                   </div>
                 </div>
 
-                {getSubtotal() < 50 && (
+                {getSubtotal() < 5000 && (
                   <div className="bg-blue-50 p-3 rounded-lg">
                     <p className="text-sm text-blue-700">
-                      Add {formatPrice(50 - getSubtotal())} more for free
+                      Add {formatPrice(5000 - getSubtotal())} more for free
                       shipping!
                     </p>
                   </div>

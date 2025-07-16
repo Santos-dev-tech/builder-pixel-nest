@@ -86,7 +86,7 @@ export default function Index() {
             <Link to="/" className="flex items-center">
               <Shirt className="h-8 w-8 text-orange-500" />
               <span className="ml-2 text-xl font-bold text-gray-900">
-                StyleCo
+                SZN by Ondieki
               </span>
             </Link>
 
@@ -195,7 +195,9 @@ export default function Index() {
                 <Truck className="h-8 w-8 text-orange-500" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Free Shipping</h3>
-              <p className="text-gray-600">Free delivery on orders over $50</p>
+              <p className="text-gray-600">
+                Free delivery on orders over KSh 5000
+              </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -302,15 +304,15 @@ export default function Index() {
                         {product.salePrice ? (
                           <>
                             <span className="font-bold text-orange-500">
-                              ${product.salePrice}
+                              KSh {product.salePrice.toLocaleString()}
                             </span>
                             <span className="text-sm text-gray-500 line-through">
-                              ${product.price}
+                              KSh {product.price.toLocaleString()}
                             </span>
                           </>
                         ) : (
                           <span className="font-bold text-gray-900">
-                            ${product.price}
+                            KSh {product.price.toLocaleString()}
                           </span>
                         )}
                       </div>
@@ -366,7 +368,7 @@ export default function Index() {
             <div>
               <div className="flex items-center mb-4">
                 <Shirt className="h-8 w-8 text-orange-500" />
-                <span className="ml-2 text-xl font-bold">StyleCo</span>
+                <span className="ml-2 text-xl font-bold">SZN by Ondieki</span>
               </div>
               <p className="text-gray-400 mb-4">
                 Your destination for premium fashion and style.
@@ -476,7 +478,7 @@ export default function Index() {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 StyleCo. All rights reserved.</p>
+            <p>&copy; 2024 SZN by Ondieki. All rights reserved.</p>
           </div>
         </div>
       </footer>

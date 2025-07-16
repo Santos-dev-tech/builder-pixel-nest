@@ -86,7 +86,7 @@ const DEMO_PRODUCTS: Product[] = [
     name: "Classic Cotton Tee",
     description:
       "A comfortable and stylish cotton t-shirt perfect for everyday wear. Made from premium 100% organic cotton with a relaxed fit.",
-    price: 29.99,
+    price: 2999,
     images: [
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=600&fit=crop",
       "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=500&h=600&fit=crop",
@@ -105,8 +105,8 @@ const DEMO_PRODUCTS: Product[] = [
     name: "Slim Fit Jeans",
     description:
       "Modern slim-fit jeans with a contemporary silhouette. Crafted from premium denim with stretch for comfort.",
-    price: 79.99,
-    salePrice: 59.99,
+    price: 7999,
+    salePrice: 5999,
     images: [
       "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&h=600&fit=crop",
       "https://images.unsplash.com/photo-1506629905607-e48883e9f8a8?w=500&h=600&fit=crop",
@@ -125,7 +125,7 @@ const DEMO_PRODUCTS: Product[] = [
     name: "Wool Blend Sweater",
     description:
       "Cozy wool blend sweater perfect for cooler weather. Luxurious feel with excellent warmth retention.",
-    price: 89.99,
+    price: 8999,
     images: [
       "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500&h=600&fit=crop",
       "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&h=600&fit=crop",
@@ -144,7 +144,7 @@ const DEMO_PRODUCTS: Product[] = [
     name: "Summer Dress",
     description:
       "Light and airy summer dress perfect for warm days. Flowy design with breathable fabric.",
-    price: 69.99,
+    price: 6999,
     images: [
       "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500&h=600&fit=crop",
       "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=500&h=600&fit=crop",
@@ -163,7 +163,7 @@ const DEMO_PRODUCTS: Product[] = [
     name: "Leather Jacket",
     description:
       "Classic leather jacket for a timeless look. Premium genuine leather with vintage styling.",
-    price: 199.99,
+    price: 19999,
     images: [
       "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&h=600&fit=crop",
       "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=500&h=600&fit=crop",
@@ -182,7 +182,7 @@ const DEMO_PRODUCTS: Product[] = [
     name: "Athletic Shorts",
     description:
       "Comfortable athletic shorts for workouts and casual wear. Moisture-wicking fabric with elastic waistband.",
-    price: 39.99,
+    price: 3999,
     images: [
       "https://images.unsplash.com/photo-1506629905607-e48883e9f8a8?w=500&h=600&fit=crop",
       "https://images.unsplash.com/photo-1582552938357-32b906df40cb?w=500&h=600&fit=crop",

@@ -1,10 +1,24 @@
 import { useState, useEffect } from "react";
-import { OrderService, type Order } from "@/lib/productService";
+import {
+  OrderService,
+  ProductService,
+  type Order,
+  type Product,
+} from "@/lib/productService";
 import { AdminService, type AdminStats } from "@/lib/adminService";
 import { AuthService } from "@/lib/authService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ArrowLeft,
   Package,
@@ -18,6 +32,12 @@ import {
   Download,
   Search,
   Filter,
+  Plus,
+  Edit,
+  Trash2,
+  ShoppingBag,
+  Star,
+  StarOff,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FirebaseStatus } from "@/components/FirebaseStatus";
@@ -25,6 +45,7 @@ import { AdminSetup } from "@/components/AdminSetup";
 
 export default function Admin() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -32,6 +53,24 @@ export default function Admin() {
   const [showAdminSetup, setShowAdminSetup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [activeTab, setActiveTab] = useState<"orders" | "products">("orders");
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productForm, setProductForm] = useState<Partial<Product>>({
+    name: "",
+    description: "",
+    price: 0,
+    salePrice: 0,
+    images: [""],
+    category: "",
+    sizes: [],
+    colors: [],
+    inStock: true,
+    featured: false,
+    tags: [],
+    inventory: 0,
+    sku: "",
+  });
 
   useEffect(() => {
     initializeAdmin();
@@ -50,6 +89,7 @@ export default function Admin() {
 
       if (adminStatus) {
         await loadOrders();
+        await loadProducts();
         await loadStats();
       }
     } catch (error) {
@@ -100,6 +140,15 @@ export default function Admin() {
     }
   };
 
+  const loadProducts = async () => {
+    try {
+      const allProducts = await ProductService.getAllProducts();
+      setProducts(allProducts);
+    } catch (error) {
+      console.error("Error loading products:", error);
+    }
+  };
+
   const handleUpdateOrderStatus = async (
     orderId: string,
     status: Order["status"],
@@ -117,8 +166,152 @@ export default function Admin() {
   const handleExportOrders = () => {
     AdminService.downloadOrdersCSV(
       filteredOrders,
-      `styleco_orders_${new Date().toISOString().split("T")[0]}.csv`,
+      `szn_orders_${new Date().toISOString().split("T")[0]}.csv`,
     );
+  };
+
+  const resetProductForm = () => {
+    setProductForm({
+      name: "",
+      description: "",
+      price: 0,
+      salePrice: 0,
+      images: [""],
+      category: "",
+      sizes: [],
+      colors: [],
+      inStock: true,
+      featured: false,
+      tags: [],
+      inventory: 0,
+      sku: "",
+    });
+    setEditingProduct(null);
+    setShowProductForm(false);
+  };
+
+  const handleProductSubmit = async () => {
+    try {
+      // Validate form
+      if (
+        !productForm.name ||
+        !productForm.description ||
+        !productForm.price ||
+        !productForm.category
+      ) {
+        alert("Please fill in all required fields");
+        return;
+      }
+
+      const productData = {
+        ...productForm,
+        price: Number(productForm.price),
+        salePrice: productForm.salePrice
+          ? Number(productForm.salePrice)
+          : undefined,
+        inventory: Number(productForm.inventory) || 0,
+        images: productForm.images?.filter((img) => img.trim()) || [],
+        sizes: productForm.sizes || [],
+        colors: productForm.colors || [],
+        tags: productForm.tags || [],
+      };
+
+      if (editingProduct?.id) {
+        await ProductService.updateProduct(editingProduct.id, productData);
+        alert("Product updated successfully!");
+      } else {
+        await ProductService.createProduct(
+          productData as Omit<Product, "id" | "createdAt" | "updatedAt">,
+        );
+        alert("Product created successfully!");
+      }
+
+      await loadProducts();
+      resetProductForm();
+    } catch (error) {
+      console.error("Error saving product:", error);
+      alert("Failed to save product");
+    }
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setProductForm({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      salePrice: product.salePrice || 0,
+      images: product.images,
+      category: product.category,
+      sizes: product.sizes,
+      colors: product.colors,
+      inStock: product.inStock,
+      featured: product.featured,
+      tags: product.tags,
+      inventory: product.inventory || 0,
+      sku: product.sku || "",
+    });
+    setShowProductForm(true);
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        await ProductService.deleteProduct(productId);
+        alert("Product deleted successfully!");
+        await loadProducts();
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        alert("Failed to delete product");
+      }
+    }
+  };
+
+  const handleToggleProductFeatured = async (product: Product) => {
+    try {
+      await ProductService.updateProduct(product.id!, {
+        featured: !product.featured,
+      });
+      await loadProducts();
+    } catch (error) {
+      console.error("Error updating product:", error);
+      alert("Failed to update product");
+    }
+  };
+
+  const addImageField = () => {
+    setProductForm((prev) => ({
+      ...prev,
+      images: [...(prev.images || []), ""],
+    }));
+  };
+
+  const updateImageField = (index: number, value: string) => {
+    setProductForm((prev) => ({
+      ...prev,
+      images: prev.images?.map((img, i) => (i === index ? value : img)) || [],
+    }));
+  };
+
+  const removeImageField = (index: number) => {
+    setProductForm((prev) => ({
+      ...prev,
+      images: prev.images?.filter((_, i) => i !== index) || [],
+    }));
+  };
+
+  const updateArrayField = (
+    field: "sizes" | "colors" | "tags",
+    value: string,
+  ) => {
+    const items = value
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => item);
+    setProductForm((prev) => ({
+      ...prev,
+      [field]: items,
+    }));
   };
 
   const formatPrice = (price: number) => {
@@ -435,10 +628,30 @@ export default function Admin() {
               </Button>
             </Link>
             <h1 className="text-3xl font-bold text-gray-900">
-              Order Management
+              Admin Dashboard
             </h1>
           </div>
           <FirebaseStatus />
+        </div>
+
+        {/* Tabs */}
+        <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg w-fit">
+          <Button
+            variant={activeTab === "orders" ? "default" : "ghost"}
+            onClick={() => setActiveTab("orders")}
+            className="flex items-center gap-2"
+          >
+            <Package className="h-4 w-4" />
+            Orders
+          </Button>
+          <Button
+            variant={activeTab === "products" ? "default" : "ghost"}
+            onClick={() => setActiveTab("products")}
+            className="flex items-center gap-2"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Products
+          </Button>
         </div>
 
         {/* Stats */}
@@ -503,119 +716,533 @@ export default function Admin() {
           </Card>
         </div>
 
-        {/* Orders List */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between mb-4">
-              <CardTitle>Orders Management</CardTitle>
-              <div className="flex items-center gap-2">
+        {/* Orders Section */}
+        {activeTab === "orders" && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between mb-4">
+                <CardTitle>Orders Management</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleExportOrders}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                  <Button onClick={loadOrders} variant="outline" size="sm">
+                    Refresh
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search orders by number, customer name, email, or phone..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
                 <Button
-                  onClick={handleExportOrders}
+                  onClick={() => setShowAdminSetup(true)}
                   variant="outline"
                   size="sm"
+                  className="text-orange-600 border-orange-600"
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
-                </Button>
-                <Button onClick={loadOrders} variant="outline" size="sm">
-                  Refresh
+                  <Shield className="h-4 w-4 mr-2" />
+                  Admin Setup
                 </Button>
               </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search orders by number, customer name, email, or phone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-              <Button
-                onClick={() => setShowAdminSetup(true)}
-                variant="outline"
-                size="sm"
-                className="text-orange-600 border-orange-600"
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Admin Setup
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin h-8 w-8 mx-auto mb-4">
-                  <Package className="h-8 w-8 text-gray-400" />
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin h-8 w-8 mx-auto mb-4">
+                    <Package className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600">Loading orders...</p>
                 </div>
-                <p className="text-gray-600">Loading orders...</p>
-              </div>
-            ) : filteredOrders.length === 0 ? (
-              <div className="text-center py-8">
-                <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-600 mb-2">No orders found</p>
-                <p className="text-sm text-gray-500">
-                  Orders will appear here when customers make purchases
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border hover:border-gray-300 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-4">
-                        <div>
-                          <h3 className="font-semibold">{order.orderNumber}</h3>
-                          <p className="text-sm text-gray-600">
-                            {order.customerInfo.firstName}{" "}
-                            {order.customerInfo.lastName} •{" "}
-                            {order.customerInfo.email}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {formatDate(order.createdAt)}
-                          </p>
+              ) : filteredOrders.length === 0 ? (
+                <div className="text-center py-8">
+                  <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-gray-600 mb-2">No orders found</p>
+                  <p className="text-sm text-gray-500">
+                    Orders will appear here when customers make purchases
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredOrders.map((order) => (
+                    <div
+                      key={order.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border hover:border-gray-300 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <h3 className="font-semibold">
+                              {order.orderNumber}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {order.customerInfo.firstName}{" "}
+                              {order.customerInfo.lastName} •{" "}
+                              {order.customerInfo.email}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {formatDate(order.createdAt)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="font-semibold">
-                          {formatPrice(order.totalAmount)}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {order.items.length} items
-                        </p>
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <Badge className={getStatusColor(order.status)}>
-                          {order.status}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className={getPaymentStatusColor(order.paymentStatus)}
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="font-semibold">
+                            {formatPrice(order.totalAmount)}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {order.items.length} items
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Badge className={getStatusColor(order.status)}>
+                            {order.status}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className={getPaymentStatusColor(
+                              order.paymentStatus,
+                            )}
+                          >
+                            {order.paymentStatus}
+                          </Badge>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedOrder(order)}
                         >
-                          {order.paymentStatus}
-                        </Badge>
+                          <Eye className="h-4 w-4" />
+                        </Button>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Products Section */}
+        {activeTab === "products" && (
+          <div className="space-y-6">
+            {/* Product Form Modal */}
+            {showProductForm && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>
+                      {editingProduct ? "Edit Product" : "Add New Product"}
+                    </CardTitle>
+                    <Button variant="ghost" onClick={resetProductForm}>
+                      ✕
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Product Name *
+                      </label>
+                      <Input
+                        value={productForm.name}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter product name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        SKU
+                      </label>
+                      <Input
+                        value={productForm.sku}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({
+                            ...prev,
+                            sku: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter SKU"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Description *
+                    </label>
+                    <Textarea
+                      value={productForm.description}
+                      onChange={(e) =>
+                        setProductForm((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter product description"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Price (KSh) *
+                      </label>
+                      <Input
+                        type="number"
+                        value={productForm.price}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({
+                            ...prev,
+                            price: Number(e.target.value),
+                          }))
+                        }
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Sale Price (KSh)
+                      </label>
+                      <Input
+                        type="number"
+                        value={productForm.salePrice}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({
+                            ...prev,
+                            salePrice: Number(e.target.value),
+                          }))
+                        }
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Inventory
+                      </label>
+                      <Input
+                        type="number"
+                        value={productForm.inventory}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({
+                            ...prev,
+                            inventory: Number(e.target.value),
+                          }))
+                        }
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Category *
+                    </label>
+                    <Select
+                      value={productForm.category}
+                      onValueChange={(value) =>
+                        setProductForm((prev) => ({ ...prev, category: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ProductService.getCategories().map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Sizes (comma separated)
+                      </label>
+                      <Input
+                        value={productForm.sizes?.join(", ")}
+                        onChange={(e) =>
+                          updateArrayField("sizes", e.target.value)
+                        }
+                        placeholder="S, M, L, XL"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Colors (comma separated)
+                      </label>
+                      <Input
+                        value={productForm.colors?.join(", ")}
+                        onChange={(e) =>
+                          updateArrayField("colors", e.target.value)
+                        }
+                        placeholder="Black, White, Blue"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Tags (comma separated)
+                      </label>
+                      <Input
+                        value={productForm.tags?.join(", ")}
+                        onChange={(e) =>
+                          updateArrayField("tags", e.target.value)
+                        }
+                        placeholder="summer, casual, trending"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Product Images
+                    </label>
+                    <div className="space-y-2">
+                      {productForm.images?.map((image, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={image}
+                            onChange={(e) =>
+                              updateImageField(index, e.target.value)
+                            }
+                            placeholder="Enter image URL"
+                          />
+                          {productForm.images!.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeImageField(index)}
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+                      ))}
                       <Button
-                        variant="ghost"
+                        type="button"
+                        variant="outline"
                         size="sm"
-                        onClick={() => setSelectedOrder(order)}
+                        onClick={addImageField}
                       >
-                        <Eye className="h-4 w-4" />
+                        Add Image
                       </Button>
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={productForm.inStock}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({
+                            ...prev,
+                            inStock: e.target.checked,
+                          }))
+                        }
+                        className="rounded"
+                      />
+                      <span className="text-sm font-medium">In Stock</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={productForm.featured}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({
+                            ...prev,
+                            featured: e.target.checked,
+                          }))
+                        }
+                        className="rounded"
+                      />
+                      <span className="text-sm font-medium">
+                        Featured Product
+                      </span>
+                    </label>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button
+                      onClick={handleProductSubmit}
+                      className="bg-orange-500 hover:bg-orange-600"
+                    >
+                      {editingProduct ? "Update Product" : "Create Product"}
+                    </Button>
+                    <Button variant="outline" onClick={resetProductForm}>
+                      Cancel
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
+
+            {/* Products List */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between mb-4">
+                  <CardTitle>Product Management</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => setShowProductForm(true)}
+                      className="bg-orange-500 hover:bg-orange-600"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Product
+                    </Button>
+                    <Button onClick={loadProducts} variant="outline" size="sm">
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin h-8 w-8 mx-auto mb-4">
+                      <ShoppingBag className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <p className="text-gray-600">Loading products...</p>
+                  </div>
+                ) : products.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p className="text-gray-600 mb-2">No products found</p>
+                    <p className="text-sm text-gray-500">
+                      Start by adding your first product
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {products.map((product) => (
+                      <div
+                        key={product.id}
+                        className="border rounded-lg p-4 space-y-3"
+                      >
+                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                          <img
+                            src={product.images[0] || "/placeholder-image.jpg"}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between">
+                            <h3 className="font-semibold text-sm">
+                              {product.name}
+                            </h3>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  handleToggleProductFeatured(product)
+                                }
+                                className="p-1 h-auto"
+                              >
+                                {product.featured ? (
+                                  <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                                ) : (
+                                  <StarOff className="h-4 w-4 text-gray-400" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+
+                          <p className="text-xs text-gray-600 line-clamp-2">
+                            {product.description}
+                          </p>
+
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {product.category}
+                            </Badge>
+                            <Badge
+                              variant={
+                                product.inStock ? "default" : "secondary"
+                              }
+                              className="text-xs"
+                            >
+                              {product.inStock ? "In Stock" : "Out of Stock"}
+                            </Badge>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div>
+                              {product.salePrice ? (
+                                <>
+                                  <span className="text-sm font-bold text-orange-600">
+                                    KSh {product.salePrice}
+                                  </span>
+                                  <span className="text-xs text-gray-500 line-through ml-1">
+                                    KSh {product.price}
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-sm font-bold">
+                                  KSh {product.price}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Stock: {product.inventory || 0}
+                            </div>
+                          </div>
+
+                          <div className="flex gap-1 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditProduct(product)}
+                              className="flex-1 text-xs"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteProduct(product.id!)}
+                              className="flex-1 text-xs text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
 
       <AdminSetup
