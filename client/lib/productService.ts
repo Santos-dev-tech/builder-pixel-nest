@@ -291,34 +291,65 @@ export class ProductService {
   }
 
   static async getAllProducts(): Promise<Product[]> {
+    console.log("🔍 getAllProducts called");
+    console.log("🔍 Firebase available:", isFirebaseAvailable());
+
     // Return demo products if Firebase not configured
     if (!isFirebaseAvailable()) {
+      console.log("❌ Firebase not available, returning demo products");
       return DEMO_PRODUCTS;
     }
 
     try {
+      console.log("🔍 Fetching products from Firebase...");
       const querySnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+      console.log(
+        "✅ Firebase query successful, found",
+        querySnapshot.docs.length,
+        "products",
+      );
+
       const products = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
 
-      // If no products found, try to initialize demo products but don't fail if permissions are insufficient
+      // If no products found, try to initialize demo products and then fetch them from Firebase
       if (products.length === 0) {
+        console.log(
+          "📦 No products found in Firebase, initializing demo products...",
+        );
         try {
-          await this.initializeDemoProducts();
-          // If successful, return demo products
-          return DEMO_PRODUCTS;
+          const success = await this.initializeDemoProducts();
+          if (success) {
+            console.log(
+              "✅ Demo products initialized, fetching from Firebase...",
+            );
+            // Fetch the newly created products from Firebase
+            const newQuerySnapshot = await getDocs(
+              collection(db, PRODUCTS_COLLECTION),
+            );
+            const newProducts = newQuerySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            })) as Product[];
+            console.log(
+              "✅ Retrieved",
+              newProducts.length,
+              "products from Firebase",
+            );
+            return newProducts;
+          } else {
+            console.log("❌ Failed to initialize, using local demo data");
+            return DEMO_PRODUCTS;
+          }
         } catch (initError) {
-          console.log(
-            "Could not initialize demo products (insufficient permissions), using local demo data:",
-            initError,
-          );
-          // Return local demo products as fallback
+          console.log("❌ Could not initialize demo products:", initError);
           return DEMO_PRODUCTS;
         }
       }
 
+      console.log("✅ Returning", products.length, "products from Firebase");
       return products;
     } catch (error) {
       console.error("Error getting products:", error);
