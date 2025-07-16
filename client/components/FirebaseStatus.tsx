@@ -56,6 +56,18 @@ export function FirebaseStatus() {
     );
   }
 
+  if (status === "error") {
+    return (
+      <Badge
+        variant="secondary"
+        className="flex items-center gap-1 bg-yellow-500"
+      >
+        <AlertTriangle className="h-3 w-3" />
+        Firebase Error - Demo Mode ({productCount} products)
+      </Badge>
+    );
+  }
+
   return (
     <Badge variant="secondary" className="flex items-center gap-1 bg-blue-500">
       <CloudOff className="h-3 w-3" />
