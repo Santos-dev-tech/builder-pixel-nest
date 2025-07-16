@@ -244,18 +244,27 @@ export class ProductService {
     productData: Omit<Product, "id" | "createdAt" | "updatedAt">,
   ): Promise<string> {
     if (!isFirebaseAvailable()) {
-      throw new Error("Firebase not configured");
+      throw new Error(
+        "Firebase not configured. Please check your Firebase connection and try again.",
+      );
     }
 
     try {
+      console.log("Creating product in Firebase...", productData);
       const docRef = await addDoc(collection(db, PRODUCTS_COLLECTION), {
         ...productData,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
+      console.log("Product created successfully with ID:", docRef.id);
       return docRef.id;
     } catch (error) {
       console.error("Error creating product:", error);
+      if (error.code === "permission-denied") {
+        throw new Error(
+          "Permission denied. Please make sure you're logged in as an admin and your Firestore security rules allow product creation.",
+        );
+      }
       throw error;
     }
   }
