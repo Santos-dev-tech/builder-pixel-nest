@@ -139,8 +139,8 @@ export const handleStkPush: RequestHandler = async (req, res) => {
       PartyB: mpesaConfig.businessShortCode,
       PhoneNumber: phone,
       CallBackURL: mpesaConfig.callbackUrl,
-      AccountReference: `SZN-${Date.now()}`,
-      TransactionDesc: description,
+      AccountReference: "SZN by Ondieki",
+      TransactionDesc: "Payments for Products",
     };
 
     // Make STK Push request
