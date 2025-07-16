@@ -166,7 +166,7 @@ export default function Admin() {
   const handleExportOrders = () => {
     AdminService.downloadOrdersCSV(
       filteredOrders,
-      `styleco_orders_${new Date().toISOString().split("T")[0]}.csv`,
+      `szn_orders_${new Date().toISOString().split("T")[0]}.csv`,
     );
   };
 
