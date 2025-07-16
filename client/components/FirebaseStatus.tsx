@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { isFirebaseConfigured } from "@/lib/firebase";
+import { isFirebaseConfigured, isFirebaseAvailable } from "@/lib/firebase";
 import { ProductService } from "@/lib/productService";
 import { Badge } from "@/components/ui/badge";
-import { Database, CloudOff, CheckCircle } from "lucide-react";
+import { Database, CloudOff, CheckCircle, AlertTriangle } from "lucide-react";
 
 export function FirebaseStatus() {
   const [status, setStatus] = useState<"checking" | "connected" | "demo">(
