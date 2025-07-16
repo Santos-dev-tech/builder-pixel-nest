@@ -139,7 +139,7 @@ export const handleStkPush: RequestHandler = async (req, res) => {
       PartyB: mpesaConfig.businessShortCode,
       PhoneNumber: phone,
       CallBackURL: mpesaConfig.callbackUrl,
-      AccountReference: `StyleCo-${Date.now()}`,
+      AccountReference: `SZN-${Date.now()}`,
       TransactionDesc: description,
     };
 
