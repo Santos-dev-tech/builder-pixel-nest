@@ -170,6 +170,150 @@ export default function Admin() {
     );
   };
 
+  const resetProductForm = () => {
+    setProductForm({
+      name: "",
+      description: "",
+      price: 0,
+      salePrice: 0,
+      images: [""],
+      category: "",
+      sizes: [],
+      colors: [],
+      inStock: true,
+      featured: false,
+      tags: [],
+      inventory: 0,
+      sku: "",
+    });
+    setEditingProduct(null);
+    setShowProductForm(false);
+  };
+
+  const handleProductSubmit = async () => {
+    try {
+      // Validate form
+      if (
+        !productForm.name ||
+        !productForm.description ||
+        !productForm.price ||
+        !productForm.category
+      ) {
+        alert("Please fill in all required fields");
+        return;
+      }
+
+      const productData = {
+        ...productForm,
+        price: Number(productForm.price),
+        salePrice: productForm.salePrice
+          ? Number(productForm.salePrice)
+          : undefined,
+        inventory: Number(productForm.inventory) || 0,
+        images: productForm.images?.filter((img) => img.trim()) || [],
+        sizes: productForm.sizes || [],
+        colors: productForm.colors || [],
+        tags: productForm.tags || [],
+      };
+
+      if (editingProduct?.id) {
+        await ProductService.updateProduct(editingProduct.id, productData);
+        alert("Product updated successfully!");
+      } else {
+        await ProductService.createProduct(
+          productData as Omit<Product, "id" | "createdAt" | "updatedAt">,
+        );
+        alert("Product created successfully!");
+      }
+
+      await loadProducts();
+      resetProductForm();
+    } catch (error) {
+      console.error("Error saving product:", error);
+      alert("Failed to save product");
+    }
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setProductForm({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      salePrice: product.salePrice || 0,
+      images: product.images,
+      category: product.category,
+      sizes: product.sizes,
+      colors: product.colors,
+      inStock: product.inStock,
+      featured: product.featured,
+      tags: product.tags,
+      inventory: product.inventory || 0,
+      sku: product.sku || "",
+    });
+    setShowProductForm(true);
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        await ProductService.deleteProduct(productId);
+        alert("Product deleted successfully!");
+        await loadProducts();
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        alert("Failed to delete product");
+      }
+    }
+  };
+
+  const handleToggleProductFeatured = async (product: Product) => {
+    try {
+      await ProductService.updateProduct(product.id!, {
+        featured: !product.featured,
+      });
+      await loadProducts();
+    } catch (error) {
+      console.error("Error updating product:", error);
+      alert("Failed to update product");
+    }
+  };
+
+  const addImageField = () => {
+    setProductForm((prev) => ({
+      ...prev,
+      images: [...(prev.images || []), ""],
+    }));
+  };
+
+  const updateImageField = (index: number, value: string) => {
+    setProductForm((prev) => ({
+      ...prev,
+      images: prev.images?.map((img, i) => (i === index ? value : img)) || [],
+    }));
+  };
+
+  const removeImageField = (index: number) => {
+    setProductForm((prev) => ({
+      ...prev,
+      images: prev.images?.filter((_, i) => i !== index) || [],
+    }));
+  };
+
+  const updateArrayField = (
+    field: "sizes" | "colors" | "tags",
+    value: string,
+  ) => {
+    const items = value
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => item);
+    setProductForm((prev) => ({
+      ...prev,
+      [field]: items,
+    }));
+  };
+
   const formatPrice = (price: number) => {
     return `KSh ${price.toFixed(2)}`;
   };
