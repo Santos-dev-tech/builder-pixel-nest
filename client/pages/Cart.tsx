@@ -154,7 +154,7 @@ export default function Cart() {
     const paymentData = {
       amount: Math.round(getTotal()),
       phone: phone,
-      description: `StyleCo Order - ${cartItems.length} items`,
+      description: `SZN by Ondieki Order - ${cartItems.length} items`,
       orderData: {
         items: cartItems,
         customerInfo: formData,
