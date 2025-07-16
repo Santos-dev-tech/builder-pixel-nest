@@ -223,10 +223,18 @@ export class ProductService {
       }
 
       await batch.commit();
-      console.log("Demo products initialized in Firebase");
+      console.log("✅ Demo products initialized in Firebase");
       return true;
     } catch (error) {
-      console.error("Error initializing demo products:", error);
+      if (error.code === "permission-denied") {
+        console.log(
+          "🔒 Cannot initialize demo products - insufficient permissions.\n" +
+            "This is normal if you haven't updated your Firestore security rules yet.\n" +
+            "The app will use local demo products instead.",
+        );
+      } else {
+        console.error("Error initializing demo products:", error);
+      }
       return false;
     }
   }
