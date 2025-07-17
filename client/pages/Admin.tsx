@@ -12,13 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@/components/ui/select";
 import {
   ArrowLeft,
   Package,
@@ -192,6 +186,9 @@ export default function Admin() {
 
   const handleProductSubmit = async () => {
     try {
+      console.log("Starting product submission...");
+      console.log("Product form data:", productForm);
+
       // Validate form
       if (
         !productForm.name ||
@@ -199,16 +196,25 @@ export default function Admin() {
         !productForm.price ||
         !productForm.category
       ) {
-        alert("Please fill in all required fields");
+        alert(
+          "Please fill in all required fields:\n- Product Name\n- Description\n- Price\n- Category",
+        );
+        return;
+      }
+
+      // Check if price is valid
+      if (productForm.price <= 0) {
+        alert("Please enter a valid price greater than 0");
         return;
       }
 
       const productData = {
         ...productForm,
         price: Number(productForm.price),
-        salePrice: productForm.salePrice
-          ? Number(productForm.salePrice)
-          : undefined,
+        salePrice:
+          productForm.salePrice && productForm.salePrice > 0
+            ? Number(productForm.salePrice)
+            : undefined,
         inventory: Number(productForm.inventory) || 0,
         images: productForm.images?.filter((img) => img.trim()) || [],
         sizes: productForm.sizes || [],
@@ -216,21 +222,38 @@ export default function Admin() {
         tags: productForm.tags || [],
       };
 
+      console.log("Processed product data:", productData);
+
       if (editingProduct?.id) {
+        console.log("Updating existing product...");
         await ProductService.updateProduct(editingProduct.id, productData);
         alert("Product updated successfully!");
       } else {
-        await ProductService.createProduct(
+        console.log("Creating new product...");
+        const productId = await ProductService.createProduct(
           productData as Omit<Product, "id" | "createdAt" | "updatedAt">,
         );
+        console.log("Product created with ID:", productId);
         alert("Product created successfully!");
       }
 
+      console.log("Reloading products...");
       await loadProducts();
       resetProductForm();
+      console.log("Product submission completed!");
     } catch (error) {
       console.error("Error saving product:", error);
-      alert("Failed to save product");
+      if (error.message?.includes("Firebase not configured")) {
+        alert(
+          "Firebase is not properly configured. Please check your Firebase setup or try again when the connection is ready.",
+        );
+      } else if (error.message?.includes("permission")) {
+        alert(
+          "Permission denied. Please make sure you're logged in as an admin and have proper Firebase permissions.",
+        );
+      } else {
+        alert(`Failed to save product: ${error.message || "Unknown error"}`);
+      }
     }
   };
 
@@ -964,16 +987,12 @@ export default function Admin() {
                         setProductForm((prev) => ({ ...prev, category: value }))
                       }
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ProductService.getCategories().map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                      <option value="">Select category</option>
+                      {ProductService.getCategories().map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
                     </Select>
                   </div>
 
